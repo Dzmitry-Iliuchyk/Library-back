@@ -2,16 +2,16 @@
 
 namespace Library.Domain.Models.Book {
     public class FreeBook: Book {
-        public FreeBook(int id, string title, string genre, string description, string ISBN, Author author ) : base(id, title, genre, description, ISBN, author ) {
+        public FreeBook( Guid id, string title, string genre, string description, string ISBN, Author author ) : base(id, title, genre, description, ISBN, author ) {
         }
 
         public FreeBook( Book book ) : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.Author ) {
         }
 
-        public override TakenBook Take( int clientId, TimeSpan periodOfUse ) {
+        public override TakenBook Take( Guid clientId, TimeSpan periodOfUse ) {
                 return new TakenBook( this, clientId , DateTime.UtcNow, DateTime.UtcNow.Add(periodOfUse) );
         }
-        public override FreeBook Free( int clientId ) {
+        public override FreeBook Free( Guid clientId ) {
            
             throw new BookAlreadyFreeException();
         }

@@ -2,6 +2,7 @@
 using Library.DataAccess.DataBase.Contexts;
 using Library.Domain.Models.Book;
 using Library.Services.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Library.DataAccess.Repository {
     public class BookRepository: IBookRepository {
         private readonly LibraryDBContext _dbContext;
         private readonly IMapper _mapper;
-
+        IDbContextTransaction _dbTransaction;
         public BookRepository( LibraryDBContext dbContext, IMapper mapper ) {
             this._dbContext = dbContext;
             this._mapper = mapper;
@@ -20,6 +21,7 @@ namespace Library.DataAccess.Repository {
 
         public Task AddNewBook( Book book ) {
             throw new NotImplementedException();
+
         }
 
         public Task DeleteBook( int bookId ) {

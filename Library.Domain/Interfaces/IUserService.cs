@@ -10,5 +10,9 @@ namespace Library.Domain.Interfaces {
     public interface IUserService {
         Task<IList<User>> GetAllUsers();
         Task<IList<Book>> GetBooks(Guid userId);
+        Task<User> GetById( Guid id );
+        Task CreateUser( User user );
+        Task UpdateUser( User user );
+        Task DeleteUser( Guid userId );
     }
 }

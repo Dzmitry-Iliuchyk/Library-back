@@ -1,43 +1,49 @@
-﻿using Library.Domain.Interfaces;
+﻿using FluentValidation;
+using Library.Application.Interfaces;
+using Library.Domain.Interfaces;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
-using Library.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Library.Services.Implementations {
+namespace Library.Application.Implementations {
     public class AuthorService: IAuthorService {
-        private readonly IBookRepository _repository;
+        private readonly IAuthorRepository _repository;
+        private readonly IValidator<Author> _validator;
 
-        public AuthorService(IBookRepository bookRepository) {
+        public AuthorService( IAuthorRepository bookRepository, IValidator<Author> validator ) {
             _repository = bookRepository;
+            _validator = validator;
         }
 
-        public Task AddAuthor( Author author ) {
-            throw new NotImplementedException();
+        public async Task AddAuthor( Author author ) {
+            var result = _validator.Validate( author );
+            if (result.IsValid) {
+                await _repository.AddAuthor( author );
+            }
         }
 
-        public Task ChangeAuthor( int authorId, Author changedAuthor ) {
-            throw new NotImplementedException();
+        public async Task ChangeAuthor( Author changedAuthor ) {
+            var result = _validator.Validate( changedAuthor );
+            if (result.IsValid) {
+                await _repository.UpdateAuthor( changedAuthor );
+            }
         }
 
-        public Task DeleteAuthor( int authorId ) {
-            throw new NotImplementedException();
+        public async Task DeleteAuthor( Guid authorId ) {
+
+            await _repository.DeleteAuthor( authorId );
+
         }
 
-        public Task<IList<Author>> GetAllAuthors() {
-            throw new NotImplementedException();
+        public async Task<IList<Author>> GetAllAuthors() {
+            return await _repository.GetAllAuthors();
         }
 
-        public Task<IList<Book>> GetAllBooks( int authorId ) {
-            throw new NotImplementedException();
+        public async Task<IList<Book>> GetAllBooks( Guid authorId ) {
+            return await _repository.GetAllBooksByAuthor( authorId );
         }
 
-        public Task<Author> GetAuthor( int authorId ) {
-            throw new NotImplementedException();
+        public async Task<Author> GetAuthor( Guid authorId ) {
+            return await _repository.GetAuthor( authorId );
         }
     }
 }

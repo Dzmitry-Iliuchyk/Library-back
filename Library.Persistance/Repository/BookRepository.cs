@@ -1,47 +1,67 @@
 ﻿using AutoMapper;
+using Library.Application.Interfaces;
 using Library.DataAccess.DataBase.Contexts;
+using Library.DataAccess.DataBase.Entities;
+using Library.DataAccess.Exceptions;
 using Library.Domain.Models.Book;
-using Library.Services.Interfaces;
-using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Library.DataAccess.Repository {
     public class BookRepository: IBookRepository {
         private readonly LibraryDBContext _dbContext;
         private readonly IMapper _mapper;
-        IDbContextTransaction _dbTransaction;
         public BookRepository( LibraryDBContext dbContext, IMapper mapper ) {
             this._dbContext = dbContext;
             this._mapper = mapper;
         }
 
-        public Task AddNewBook( Book book ) {
-            throw new NotImplementedException();
-
+        public async Task AddNewBook( Book book ) {
+            var bookEntity = _mapper.Map<BookEntity>( book );
+            await _dbContext.Books.AddAsync( bookEntity );
+            await _dbContext.SaveChangesAsync();
         }
 
-        public Task DeleteBook( int bookId ) {
-            throw new NotImplementedException();
+        public async Task DeleteBook( Guid bookId ) {
+            var bookToDelete = await _dbContext.Books.FirstOrDefaultAsync( x => x.Id == bookId )
+                ?? throw new BookNotFoundException();
+            _dbContext.Books.Remove( bookToDelete );
+            await _dbContext.SaveChangesAsync();
         }
 
-        public Task<IList<Book>> GetAllBooksAsync() {
-            throw new NotImplementedException();
+        public async Task<IList<Book>> GetAllBooksAsync() {
+            var bookEntities = await _dbContext
+                .Books
+                .AsNoTracking()
+                .Include( x => x.Author )
+                .ToListAsync();
+
+            return _mapper.Map<IList<Book>>( bookEntities );
         }
 
-        public Task<Book> GetBook( int bookId ) {
-            throw new NotImplementedException();
+        public async Task<Book> GetBook( Guid bookId ) {
+            var bookEntity = await _dbContext
+                .Books
+                .AsNoTracking()
+                .Include( x => x.Author )
+                .FirstOrDefaultAsync( b => b.Id == bookId )
+                ?? throw new BookNotFoundException();
+            return _mapper.Map<Book>( bookEntity );
         }
 
-        public Task<Book> GetBook( string ISBN ) {
-            throw new NotImplementedException();
+        public async Task<Book> GetBook( string ISBN ) {
+            var bookEntity = await _dbContext
+                .Books
+                .AsNoTracking()
+                .Include( x => x.Author )
+                .FirstOrDefaultAsync( b => b.ISBN == ISBN )
+                 ?? throw new BookNotFoundException();
+            return _mapper.Map<Book>( bookEntity );
         }
 
-        public Task UpdateBook( int bookId, Book changedBook ) {
-            throw new NotImplementedException();
+        public async Task UpdateBook( Book changedBook ) {
+            var bookEntity = _mapper.Map<BookEntity>( changedBook );
+            _dbContext.Books.Update( bookEntity );
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

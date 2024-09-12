@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Services.Interfaces {
+namespace Library.Application.Interfaces {
     public interface IBookRepository {
         Task<IList<Book>> GetAllBooksAsync();
-        Task<Book> GetBook( int bookId );
+        Task<Book> GetBook( Guid bookId );
         Task<Book> GetBook( string ISBN );
         Task AddNewBook( Book book );
-        Task DeleteBook( int bookId );
-        Task UpdateBook( int bookId, Book changedBook );
+        Task DeleteBook( Guid bookId );
+        Task UpdateBook( Book changedBook );
     }
 }

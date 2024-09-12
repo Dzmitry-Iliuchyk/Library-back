@@ -22,10 +22,8 @@ namespace Library.DataAccess.DataBase.Contexts
 
             modelBuilder.Entity<BookEntity>().HasKey( x => x.Id );
             modelBuilder.Entity<AuthorEntity>().HasKey( x => x.Id );
-            modelBuilder.Entity<AuthorEntity>().HasMany( x => x.Books ).WithOne( x => x.Author ).HasForeignKey(x=>x.AuthorId);
-            modelBuilder.Entity<UserEntity>().HasMany( x => x.Books ).WithOne( x => x.User).HasForeignKey(x=>x.ClientId);
-
-            base.OnModelCreating( modelBuilder );
+            modelBuilder.Entity<AuthorEntity>().HasMany( x => x.Books ).WithOne( x => x.Author ).HasForeignKey(x=>x.AuthorId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<UserEntity>().HasMany( x => x.Books ).WithOne( x => x.User).HasForeignKey(x=>x.ClientId).OnDelete( DeleteBehavior.Restrict );
         }
 
     }

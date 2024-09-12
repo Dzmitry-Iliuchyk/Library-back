@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Services.Interfaces {
+namespace Library.Application.Interfaces {
     public interface IAuthorRepository {
         Task<IList<Author>> GetAllAuthors();
-        Task<Author> GetAuthor( int authorId );
+        Task<Author> GetAuthor( Guid authorId );
         Task AddAuthor( Author author );
-        Task ChangeAuthor( int authorId, Author changedAuthor );
-        Task DeleteAuthor( int authorId );
-        Task<IList<Book>> GetAllBooks( int authorId );
+        Task UpdateAuthor( Author changedAuthor );
+        Task DeleteAuthor( Guid authorId );
+        Task<IList<Book>> GetAllBooksByAuthor( Guid authorId );
     }
 }

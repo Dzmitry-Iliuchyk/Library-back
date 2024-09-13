@@ -3,6 +3,7 @@ using Library.DataAccess.DataBase.Entities;
 using Library.DataAccess.DataBase.Enums;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
+using System.Security.AccessControl;
 
 namespace Library.DataAccess.AutoMapper {
     public class DataBaseMapping: Profile {

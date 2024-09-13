@@ -5,11 +5,13 @@ namespace Library.Domain.Interfaces {
         Task<IList<Book>> GetAllBooksAsync();
         Task<Book> GetBook( Guid bookId );
         Task<Book> GetBook( string ISBN );
-        Task AddNewBook( Book book );
+        Task AddNewBook( string ISBN, string title, string genre, string description, Guid authorId );
         Task DeleteBook( Guid bookId );
-        Task ChangeBook( Book changedBook );
-        Task GiveBookToClient( Book book, Guid clientId );
-        Task FreeBook( Book book, Guid clientId );
-        Task AttachImageToBook( Book book, FileStream imageStream );
+        Task UpdateBook(Guid bookId, string ISBN, string title, string genre, string description, Guid authorId );
+        Task GiveBookToClient( Guid bookId, Guid clientId, TimeSpan periodToUse );
+        Task FreeBook( Guid bookId, Guid clientId );
+        Task AttachImageToBook( Guid bookId, FileStream imageStream );
+        Task GetImageToBook( Guid bookId );
     }
 }
+ 

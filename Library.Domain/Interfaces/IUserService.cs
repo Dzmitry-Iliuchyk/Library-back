@@ -11,8 +11,8 @@ namespace Library.Domain.Interfaces {
         Task<IList<User>> GetAllUsers();
         Task<IList<Book>> GetBooks(Guid userId);
         Task<User> GetById( Guid id );
-        Task CreateUser( User user );
-        Task UpdateUser( User user );
+        Task CreateUser( string userName, string email, string password );
+        Task UpdateUser( Guid userId, string userName, string email ,string password  );
         Task DeleteUser( Guid userId );
     }
 }

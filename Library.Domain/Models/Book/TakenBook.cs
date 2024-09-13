@@ -6,19 +6,18 @@ namespace Library.Domain.Models.Book {
         public DateTime TakenAt { get; private set; }
         public DateTime ReturnTo { get; private set; }
 
-        public TakenBook( Guid id, Guid client_id, string title, string genre, string description, string ISBN, Author author, DateTime takenAt, DateTime returnTo ) 
-            : base(id, title, genre, description, ISBN, author ) {
+        public TakenBook( Guid id, Guid client_id, string title, string genre, string description, string ISBN, Guid authorId, DateTime takenAt, DateTime returnTo ) 
+            : base(id, title, genre, description, ISBN, authorId ) {
             ClientId = client_id;
             TakenAt = takenAt;
             ReturnTo = returnTo;
         }
         public TakenBook( FreeBook book, Guid client_id, DateTime takenAt, DateTime returnTo ) 
-            : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.Author ) {
+            : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.AuthorId ) {
             ClientId = client_id;
             TakenAt = takenAt;
             ReturnTo = returnTo;
         }
-
         public override TakenBook Take( Guid clientId , TimeSpan periodOfUse ) {
             throw new BookTakenException( ClientId );
         }
@@ -39,7 +38,7 @@ namespace Library.Domain.Models.Book {
                   && takenBook.ISBN == ISBN 
                   && takenBook.ClientId == ClientId
                   && takenBook.Id == Id
-                  && takenBook.Author.Equals(Author)
+                  && takenBook.AuthorId == AuthorId
                   && takenBook.Description == Description
                   && takenBook.Genre == Genre;
         }
@@ -49,7 +48,7 @@ namespace Library.Domain.Models.Book {
         }
 
         public override int GetHashCode() {
-            return HashCode.Combine( 1,Id, ISBN, ClientId, Author, Description, Genre );
+            return HashCode.Combine( 1,Id, ISBN, ClientId, AuthorId, Description, Genre );
         }
     }
 }

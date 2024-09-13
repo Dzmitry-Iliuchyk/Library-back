@@ -2,15 +2,15 @@
 
 namespace Library.Domain.Models {
     public class Author: IEquatable<Author> {
-        public Author( Guid id, string firstName, string lastName, DateTime birstday, string country, IEnumerable<Book.Book> books ) {
+        public Author( Guid id, string firstName, string lastName, DateTime birstday, string country, IEnumerable<Book.Book>? books = null ) {
             Id = id;
             this.FirstName = string.IsNullOrEmpty( firstName ) ? throw new ArgumentNullException( nameof( firstName ) ): firstName;
             this.LastName = string.IsNullOrEmpty( lastName ) ? throw new ArgumentNullException( nameof( lastName ) ) :lastName  ;
             this.Birthday = birstday;
             this.Country = string.IsNullOrEmpty( country ) ? throw new ArgumentNullException( nameof( country ) ) : country;
-            this.Books = books ?? throw new ArgumentNullException( nameof( books ) );
+            this.Books = books;
         }
-
+        private Author() { }
         public Guid Id { get; private set; }
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
@@ -18,7 +18,7 @@ namespace Library.Domain.Models {
 
         public string Country { get; private set; }
 
-        public IEnumerable< Book.Book> Books { get; private set; }
+        public IEnumerable< Book.Book>? Books { get; private set; }
 
         public bool Equals( Author? other ) {
             return other is not null

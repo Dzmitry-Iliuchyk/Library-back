@@ -14,17 +14,20 @@ namespace Library.Application.Implementations {
             _validator = validator;
         }
 
-        public async Task AddAuthor( Author author ) {
+        public async Task CreateAuthor( string firstName, string lastName, DateTime birthday, string country ) {
+            var author = new Author(Guid.NewGuid(), firstName, lastName , birthday, country);
             var result = _validator.Validate( author );
             if (result.IsValid) {
                 await _repository.AddAuthor( author );
             }
         }
 
-        public async Task ChangeAuthor( Author changedAuthor ) {
-            var result = _validator.Validate( changedAuthor );
+        public async Task UpdateAuthor(Guid id, string firstName, string lastName, DateTime birthday, string country ) {
+            var authorInDb = await _repository.GetAuthor( id );
+            var updatedAuthor = new Author(authorInDb.Id, firstName, lastName, birthday, country);
+            var result = _validator.Validate( updatedAuthor );
             if (result.IsValid) {
-                await _repository.UpdateAuthor( changedAuthor );
+                await _repository.UpdateAuthor( updatedAuthor );
             }
         }
 

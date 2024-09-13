@@ -9,7 +9,7 @@ namespace Library.DataAccess.DataBase.Entities {
         public string Genre { get; set; } = null!;
         public string Description { get; set; } = null!;
         public Guid AuthorId { get; set; }
-        public AuthorEntity Author { get; set; } = null!;
+        public AuthorEntity? Author { get; set; }
         public BookType BookType { get; set; }
         public Guid? ClientId { get; set; }
         public UserEntity? User { get; set; }

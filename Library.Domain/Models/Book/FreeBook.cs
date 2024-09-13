@@ -2,10 +2,9 @@
 
 namespace Library.Domain.Models.Book {
     public class FreeBook: Book {
-        public FreeBook( Guid id, string title, string genre, string description, string ISBN, Author author ) : base(id, title, genre, description, ISBN, author ) {
+        public FreeBook( Guid id, string title, string genre, string description, string ISBN, Guid authorId ) : base(id, title, genre, description, ISBN, authorId ) {
         }
-
-        public FreeBook( Book book ) : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.Author ) {
+        public FreeBook( Book book ) : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.AuthorId ) {
         }
 
         public override TakenBook Take( Guid clientId, TimeSpan periodOfUse ) {
@@ -24,7 +23,7 @@ namespace Library.Domain.Models.Book {
             return other is FreeBook freeBook
                   && freeBook.ISBN == ISBN
                   && freeBook.Id == Id
-                  && freeBook.Author.Equals( Author )
+                  && freeBook.AuthorId == AuthorId
                   && freeBook.Description == Description
                   && freeBook.Genre == Genre;
         }
@@ -34,7 +33,7 @@ namespace Library.Domain.Models.Book {
         }
 
         public override int GetHashCode() {
-            return HashCode.Combine( 0, Id ,ISBN, Author, Description, Genre );
+            return HashCode.Combine( 0, Id ,ISBN, AuthorId, Description, Genre );
         }
 
     }

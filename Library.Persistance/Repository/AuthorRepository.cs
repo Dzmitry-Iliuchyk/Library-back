@@ -41,7 +41,7 @@ namespace Library.DataAccess.Repository {
             var authorEntities = await _dbContext
                 .Authors
                 .AsNoTracking()
-                .Include( a => a.Books )
+                //.Include( a => a.Books )
                 .ToListAsync();
             return _mapper.Map<IList<Author>>( authorEntities );
         }
@@ -50,7 +50,10 @@ namespace Library.DataAccess.Repository {
             var bookEntities = await _dbContext
                .Authors
                .AsNoTracking()
-               .Include( a => a.Books ).SelectMany( x => x.Books ).ToListAsync();
+               .Include( a => a.Books )
+               .Where(a=>a.Id == authorId)
+               .SelectMany( x => x.Books )
+               .ToListAsync();
 
             return _mapper.Map<IList<Book>>( bookEntities );
         }

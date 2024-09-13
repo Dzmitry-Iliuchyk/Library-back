@@ -8,6 +8,7 @@ using Library.DataAccess.Repository;
 using Library.Domain.Interfaces;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -30,6 +31,8 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<Author>, AuthorValidator>();
 builder.Services.AddScoped<IValidator<Book>, BookValidator>();
+
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddAutoMapper( typeof( DataBaseMapping ) );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

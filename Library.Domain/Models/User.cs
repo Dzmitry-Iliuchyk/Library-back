@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Library.Domain.Models {
     public class User {
-        public User( int id, string userName, string passwordHash, string email, IEnumerable<Book.Book> books = null) {
+        public User( Guid id, string userName, string passwordHash, string email, IEnumerable<Book.Book> books = null) {
             Id = id;
             UserName = userName;
             PasswordHash = passwordHash;
@@ -14,7 +15,7 @@ namespace Library.Domain.Models {
             Books = books;
         }
 
-        public int Id { get; private set; }
+        public Guid Id { get; private set; }
 
         public string UserName { get; private set; }
 

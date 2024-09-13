@@ -9,7 +9,7 @@ namespace Library.Application.Validator {
             RuleFor( book => book.Title ).NotEmpty().MinimumLength(2);
             RuleFor( book => book.Description ).NotEmpty().MinimumLength(20);
             RuleFor( book => book.Genre ).NotEmpty().MinimumLength(2);
-            RuleFor( book => book.Author).NotEmpty();
+            RuleFor( book => book.AuthorId).NotEmpty();
             When( book => book is TakenBook, () => {
                 RuleFor( ( taken ) => ( taken as TakenBook ).ClientId ).NotEmpty();
                 RuleFor( ( taken ) => ( taken as TakenBook ).TakenAt ).GreaterThan( DateTime.UtcNow.AddYears( -100 ) );

@@ -5,8 +5,8 @@ namespace Library.Domain.Interfaces {
     public interface IAuthorService {
         Task<IList<Author>> GetAllAuthors();
         Task<Author> GetAuthor( Guid authorId );
-        Task AddAuthor( Author author );
-        Task ChangeAuthor( Author changedAuthor );
+        Task CreateAuthor( string FirstName, string LastName, DateTime Birthday, string Country );
+        Task UpdateAuthor( Guid Id, string FirstName, string LastName, DateTime Birthday, string Country );
         Task DeleteAuthor( Guid authorId );
         Task<IList<Book>> GetAllBooks( Guid authorId );
     }

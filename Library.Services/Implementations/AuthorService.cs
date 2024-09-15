@@ -14,33 +14,33 @@ namespace Library.Application.Implementations {
             _validator = validator;
         }
 
-        public async Task CreateAuthor( string firstName, string lastName, DateTime birthday, string country, CancellationToken token = default ) {
+        public async Task CreateAuthor( string firstName, string lastName, DateTime birthday, string country ) {
             var author = new Author( Guid.NewGuid(), firstName, lastName, birthday, country );
             _validator.ValidateAndThrow( author );
-            await _repository.AddAuthor( author, token );
+            await _repository.AddAuthor( author);
         }
 
-        public async Task UpdateAuthor( Guid id, string firstName, string lastName, DateTime birthday, string country, CancellationToken token = default ) {
-            var authorInDb = await _repository.GetAuthor( id,  token  );
+        public async Task UpdateAuthor( Guid id, string firstName, string lastName, DateTime birthday, string country ) {
+            var authorInDb = await _repository.GetAuthor( id );
             var updatedAuthor = new Author( authorInDb.Id, firstName, lastName, birthday, country );
             _validator.ValidateAndThrow( updatedAuthor );
-            await _repository.UpdateAuthor( updatedAuthor,  token  );
+            await _repository.UpdateAuthor( updatedAuthor  );
         }
 
-        public async Task DeleteAuthor( Guid authorId, CancellationToken token = default ) {
-            await _repository.DeleteAuthor( authorId,  token );
+        public async Task DeleteAuthor( Guid authorId ) {
+            await _repository.DeleteAuthor( authorId );
         }
 
-        public async Task<IList<Author>> GetAllAuthors( CancellationToken token = default ) {
-            return await _repository.GetAllAuthors( token  );
+        public async Task<IList<Author>> GetAllAuthors( ) {
+            return await _repository.GetAllAuthors(   );
         }
 
-        public async Task<IList<Book>> GetAllBooks( Guid authorId, CancellationToken token = default ) {
-            return await _repository.GetAllBooksByAuthor( authorId,  token  );
+        public async Task<IList<Book>> GetAllBooks( Guid authorId ) {
+            return await _repository.GetAllBooksByAuthor( authorId  );
         }
 
-        public async Task<Author> GetAuthor( Guid authorId, CancellationToken token = default ) {
-            return await _repository.GetAuthor( authorId,  token  );
+        public async Task<Author> GetAuthor( Guid authorId ) {
+            return await _repository.GetAuthor( authorId );
         }
     }
 }

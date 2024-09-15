@@ -60,10 +60,11 @@ namespace Library.DataAccess.Repository {
             return _mapper.Map<Book>( bookEntity );
         }
 
-        public async Task UpdateBook( Book changedBook ) {
+        public Task UpdateBook( Book changedBook ) {
             var bookEntity = _mapper.Map<BookEntity>( changedBook );
             _dbContext.Books.Update( bookEntity );
-            await _dbContext.SaveChangesAsync();
+            return Task.CompletedTask;
         }
+
     }
 }

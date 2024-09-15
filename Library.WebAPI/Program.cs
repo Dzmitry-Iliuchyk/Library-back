@@ -9,6 +9,7 @@ using Library.DataAccess.Repository;
 using Library.Domain.Interfaces;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
+using Library.WebAPI.Middlewares;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -37,6 +38,9 @@ builder.Services.AddScoped<IValidator<Book>, BookValidator>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.Configure<ImageOptions>( configuration.GetSection( nameof( ImageOptions ) ) );
+//builder.Services.Configure<BookValidationOptions>( configuration.GetSection( nameof( BookValidationOptions ) ) );
+
+builder.Services.AddTransient<ExceptionMiddleware>();
 
 builder.Services.AddAutoMapper( typeof( DataBaseMapping ) );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -50,7 +54,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

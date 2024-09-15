@@ -8,7 +8,7 @@ namespace Library.Application.Validator {
             RuleFor( book => book.ISBN ).NotEmpty().MaximumLength( 13 ).MinimumLength( 10 );
             RuleFor( book => book.Title ).NotEmpty().MinimumLength(2);
             RuleFor( book => book.Description ).NotEmpty().MinimumLength(20);
-            RuleFor( book => book.Genre ).NotEmpty().MinimumLength(2);
+            RuleFor( book => book.Genre ).NotEmpty().MinimumLength(1);
             RuleFor( book => book.AuthorId).NotEmpty();
             When( book => book is TakenBook, () => {
                 RuleFor( ( taken ) => ( taken as TakenBook ).ClientId ).NotEmpty();

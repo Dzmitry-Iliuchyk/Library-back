@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Library.Domain.Exceptions {
-    internal class BookAlreadyFreeException: Exception {
-        public override string Message => $"Книга свободна";
+    internal class BookAlreadyFreeException: DomainException {
+        public override string Message => $"Книга и так свободна";
 
     }
 }

@@ -10,9 +10,4 @@ namespace Library.DataAccess.Exceptions {
         public DataAccessException( string message ) : base( message ) { }
         public DataAccessException( string message, Exception inner ) : base( message, inner ) { }
     }
-    public class CannotDeleteAuthorWithBooksException : DataAccessException{
-        public CannotDeleteAuthorWithBooksException() { }
-        public CannotDeleteAuthorWithBooksException( string message ) : base( message ) { }
-        public CannotDeleteAuthorWithBooksException( string message, Exception inner ) : base( message, inner ) { }
-    }
 }

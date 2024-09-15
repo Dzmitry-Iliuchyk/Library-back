@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Library.Application.Interfaces {
     public interface IAuthorRepository {
-        Task<IList<Author>> GetAllAuthors( CancellationToken token = default );
-        Task<Author> GetAuthor( Guid authorId, CancellationToken token = default );
-        Task AddAuthor( Author author, CancellationToken token = default );
-        Task UpdateAuthor( Author changedAuthor, CancellationToken token = default );
-        Task DeleteAuthor( Guid authorId, CancellationToken token = default );
-        Task<IList<Book>> GetAllBooksByAuthor( Guid authorId, CancellationToken token = default );
+        Task<IList<Author>> GetAllAuthors();
+        Task<Author> GetAuthor( Guid authorId);
+        Task AddAuthor( Author author);
+        Task UpdateAuthor( Author changedAuthor);
+        Task DeleteAuthor( Guid authorId);
+        Task<IList<Book>> GetAllBooksByAuthor( Guid authorId );
     }
 }

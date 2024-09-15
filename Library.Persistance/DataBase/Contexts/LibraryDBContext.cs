@@ -1,4 +1,5 @@
 ﻿using Library.DataAccess.DataBase.Entities;
+using Library.DataAccess.DataBase.Helper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,10 @@ namespace Library.DataAccess.DataBase.Contexts {
         public DbSet<UserEntity> Users { get; set; }
         public LibraryDBContext( DbContextOptions<LibraryDBContext> options ) : base( options ) {
 
+        }
+        public async Task<ITransaction> BeginTransaction() {
+            var transaction = await Database.BeginTransactionAsync();
+            return new EfTransaction( transaction );
         }
         protected override void OnModelCreating( ModelBuilder modelBuilder ) {
 

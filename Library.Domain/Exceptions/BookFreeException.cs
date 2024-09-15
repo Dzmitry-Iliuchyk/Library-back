@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Library.Domain.Exceptions {
-    public class BookFreeException : Exception{
+    public class BookFreeException : DomainException{
 
         public override string Message => $"Книга у другого клиента";
 

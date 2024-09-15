@@ -68,5 +68,10 @@ namespace Library.WebAPI.Controllers {
 
             return Results.Ok( image );
         }
+        [HttpGet( "[action]" )]
+        public async Task<IResult> ThrowException( Guid bookId ) {
+
+            throw new Exception("sfdsfssfsfd");
+        }
     }
 }

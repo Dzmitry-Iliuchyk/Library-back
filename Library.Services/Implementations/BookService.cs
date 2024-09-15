@@ -6,68 +6,58 @@ using Library.Domain.Models.Book;
 namespace Library.Application.Implementations {
     public class BookService: IBookService {
         private readonly IBookRepository _bookRepository;
+        private readonly IImageService _imageService;
         private readonly IValidator<Book> _validator;
-        public BookService( IBookRepository bookRepository, IValidator<Book> validator ) {
+        public BookService( IBookRepository bookRepository, IValidator<Book> validator, IImageService imageService  ) {
             _bookRepository = bookRepository;
             _validator = validator;
+            _imageService = imageService;
         }
-        public async Task AddNewBook( string ISBN, string title, string genre, string description, Guid authorId ) {
+        public async Task CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId ) {
             var book = new FreeBook( Guid.NewGuid(), ISBN, title, genre, description, authorId );
-            var result = _validator.Validate( book );
-            if (result.IsValid) {
-                await _bookRepository.AddNewBook( book );
-            }
+            _validator.ValidateAndThrow( book );
+            await _bookRepository.AddNewBook( book );
         }
 
-        public async Task UpdateBook( Guid bookId, string ISBN, string title, string genre, string description, Guid authorId ) {
+        public async Task UpdateBookAsync( Guid bookId, string ISBN, string title, string genre, string description, Guid authorId ) {
             Book updatedBook;
             var bookInDb = await _bookRepository.GetBook( bookId );
             if (bookInDb is TakenBook taken) {
                 updatedBook = new TakenBook( bookId, taken.ClientId, ISBN, title, genre, description, authorId, taken.TakenAt, taken.ReturnTo );
             } else
                 updatedBook = new FreeBook( bookId, ISBN, title, genre, description, authorId );
-
-            var result = _validator.Validate( updatedBook );
-            if (result.IsValid) {
-                await _bookRepository.UpdateBook( updatedBook );
-            }
+            _validator.ValidateAndThrow( updatedBook );
+            await _bookRepository.UpdateBook( updatedBook );
         }
 
-        public async Task DeleteBook( Guid bookId ) {
+        public async Task DeleteBookAsync( Guid bookId ) {
+            
             await _bookRepository.DeleteBook( bookId );
+            _imageService.DeleteImage(bookId);
         }
 
-        public async Task FreeBook( Guid bookId, Guid clientId ) {
+        public async Task FreeBookAsync( Guid bookId, Guid clientId ) {
             var book = await _bookRepository.GetBook( bookId );
             var freeBook = book.Free( clientId );
             await _bookRepository.UpdateBook( freeBook );
         }
-        public async Task GiveBookToClient( Guid bookId, Guid clientId, TimeSpan periodToUse ) {
+        public async Task GiveBookToClientAsync( Guid bookId, Guid clientId, int hoursToUse ) {
             var book = await _bookRepository.GetBook( bookId );
-            if (periodToUse > TimeSpan.Zero) {
-                var freeBook = book.Take( clientId, periodToUse );
-                await _bookRepository.UpdateBook( freeBook );
-            }
+            var freeBook = book.Take( clientId, TimeSpan.FromHours( hoursToUse ) );
+            _validator.ValidateAndThrow( freeBook );
+            await _bookRepository.UpdateBook( freeBook );
         }
 
-        public async Task<IList<Book>> GetAllBooksAsync() {
-            return await _bookRepository.GetAllBooksAsync();
+        public async Task<IList<Book>> GetAllBooksAsync(int skip, int take) {
+            return await _bookRepository.GetAllBooksAsync(skip, take);
         }
 
-        public async Task<Book> GetBook( Guid bookId ) {
+        public async Task<Book> GetBookAsync( Guid bookId ) {
             return await _bookRepository.GetBook( bookId );
         }
 
-        public async Task<Book> GetBook( string ISBN ) {
+        public async Task<Book> GetBookAsync( string ISBN ) {
             return await _bookRepository.GetBook( ISBN );
-        }
-
-        public Task GetImageToBook( Guid bookId ) {
-            throw new NotImplementedException();
-        }
-
-        public Task AttachImageToBook( Guid bookId, FileStream imageStream ) {
-            throw new NotImplementedException();
         }
     }
 }

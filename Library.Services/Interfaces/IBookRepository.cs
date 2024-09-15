@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Library.Application.Interfaces {
     public interface IBookRepository {
-        Task<IList<Book>> GetAllBooksAsync();
+        Task<IList<Book>> GetAllBooksAsync(int skip, int take);
         Task<Book> GetBook( Guid bookId );
         Task<Book> GetBook( string ISBN );
         Task AddNewBook( Book book );

@@ -28,11 +28,6 @@ namespace Library.Domain.Models.Book {
 
             throw new BookFreeException();
         }
-
-        public override T Accept<T>( IBookVisitor<T> visitor ) {
-            return visitor.Visit( this );
-        }
-
         public override bool Equals( Book? other ) {
             return other is TakenBook takenBook 
                   && takenBook.ISBN == ISBN 

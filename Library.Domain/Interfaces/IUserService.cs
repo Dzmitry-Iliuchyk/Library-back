@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Library.Domain.Interfaces {
     public interface IUserService {
-        Task<IList<User>> GetAllUsers();
+        Task<IList<User>> GetAll();
         Task<IList<Book>> GetBooks(Guid userId);
-        Task<User> GetById( Guid id );
-        Task CreateUser( string userName, string email, string password );
-        Task UpdateUser( Guid userId, string userName, string email ,string password  );
-        Task DeleteUser( Guid userId );
+        Task<User> Get( Guid id );
+        Task Create( string userName, string email, string password );
+        Task Update( Guid userId, string userName, string email ,string password  );
+        Task Delete( Guid userId );
     }
 }

@@ -1,4 +1,5 @@
 using FluentValidation;
+using Library.Application.Helpers;
 using Library.Application.Implementations;
 using Library.Application.Interfaces;
 using Library.Application.Validator;
@@ -27,12 +28,15 @@ builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<Author>, AuthorValidator>();
 builder.Services.AddScoped<IValidator<Book>, BookValidator>();
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+builder.Services.Configure<ImageOptions>( configuration.GetSection( nameof( ImageOptions ) ) );
 
 builder.Services.AddAutoMapper( typeof( DataBaseMapping ) );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

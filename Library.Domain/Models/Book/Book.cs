@@ -8,21 +8,17 @@
         public string Description { get; private set; }
         public Guid AuthorId { get; private set; }
 
-        internal protected Book( Guid id, string title, string genre, string description, string ISBN, Guid authorId ) {
+        internal protected Book( Guid id, string title, string genre, string description, string ISBN, Guid authorId) {
             Id = id;
             this.ISBN = string.IsNullOrEmpty( ISBN ) ? throw new ArgumentNullException( nameof( ISBN ), "У книги должен быть ISBN" ) : ( ISBN );
             Title = string.IsNullOrEmpty( title ) ? throw new ArgumentNullException( nameof( title ), "У книги должен быть заголовок" ) : ( title );
             Genre = string.IsNullOrEmpty( genre ) ? throw new ArgumentNullException( nameof( genre ), "У книги должен быть жанр" ) : ( genre );
             Description = string.IsNullOrEmpty( description ) ? throw new ArgumentNullException( nameof( description ), "У книги должно быть описание" ) : ( description );
             AuthorId = authorId;
-
         }
 
         public abstract TakenBook Take( Guid clientId, TimeSpan periodToUse );
         public abstract FreeBook Free( Guid clientId );
-
-        public abstract T Accept<T>( IBookVisitor<T> visitor );
-
         public abstract bool Equals( Book? other );
         public abstract override bool Equals( object? other );
         public abstract override int GetHashCode();

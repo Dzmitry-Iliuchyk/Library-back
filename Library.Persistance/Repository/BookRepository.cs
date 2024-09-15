@@ -28,11 +28,13 @@ namespace Library.DataAccess.Repository {
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IList<Book>> GetAllBooksAsync() {
+        public async Task<IList<Book>> GetAllBooksAsync(int skip, int take) {
             var bookEntities = await _dbContext
                 .Books
                 .AsNoTracking()
                 .Include( x => x.Author )
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
 
             return _mapper.Map<IList<Book>>( bookEntities );

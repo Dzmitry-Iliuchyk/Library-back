@@ -12,33 +12,33 @@ namespace Library.WebAPI.Controllers {
 
         }
         [HttpGet( "[action]" )]
-        public async Task<IResult> GetAllAuthors() {
-            var authors = await _authorService.GetAllAuthors();
+        public async Task<IResult> GetAllAuthors( CancellationToken token = default ) {
+            var authors = await _authorService.GetAllAuthors( token );
             return Results.Ok( authors );
         }
         [HttpGet( "{authorId}/getBooks" )]
-        public async Task<IResult> GetAllBooksByAuthor( [FromRoute] Guid authorId ) {
-            var books = await _authorService.GetAllBooks( authorId );
+        public async Task<IResult> GetAllBooksByAuthor( [FromRoute] Guid authorId, CancellationToken token = default ) {
+            var books = await _authorService.GetAllBooks( authorId,token  );
             return Results.Ok( books );
         }
-        [HttpGet( "{authorId}/delete" )]
-        public async Task<IResult> DeleteAuthor( [FromRoute] Guid authorId ) {
-            await _authorService.DeleteAuthor( authorId );
-            return Results.Ok();
-        }
         [HttpGet( "{authorId}/get" )]
-        public async Task<IResult> Get( [FromRoute] Guid authorId ) {
-            await _authorService.GetAuthor( authorId );
+        public async Task<IResult> Get( [FromRoute] Guid authorId, CancellationToken token = default ) {
+            await _authorService.GetAuthor( authorId,  token );
             return Results.Ok();
         }
-        [HttpGet( "[action]" )]
-        public async Task<IResult> UpdateAuthor( UpdateAuthorRequest request ) {
-            await _authorService.UpdateAuthor( request.Id, request.FirstName, request.LastName, request.Birthday, request.Country );
+        [HttpDelete( "{authorId}/delete" )]
+        public async Task<IResult> DeleteAuthor( [FromRoute] Guid authorId, CancellationToken token = default ) {
+            await _authorService.DeleteAuthor( authorId,  token  );
             return Results.Ok();
         }
-        [HttpGet( "[action]" )]
-        public async Task<IResult> CreateAuthor( CreateAuthorRequest request ) {
-            await _authorService.CreateAuthor( request.FirstName, request.LastName, request.Birthday, request.Country );
+        [HttpPut( "[action]" )]
+        public async Task<IResult> UpdateAuthor( UpdateAuthorRequest request, CancellationToken token = default ) {
+            await _authorService.UpdateAuthor( request.Id, request.FirstName, request.LastName, request.Birthday, request.Country,  token  );
+            return Results.Ok();
+        }
+        [HttpPost( "[action]" )]
+        public async Task<IResult> CreateAuthor( CreateAuthorRequest request, CancellationToken token = default ) {
+            await _authorService.CreateAuthor( request.FirstName, request.LastName, request.Birthday, request.Country,  token  );
             return Results.Ok();
         }
     }

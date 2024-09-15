@@ -9,18 +9,16 @@ namespace Library.DataAccess.DataBase.Contexts {
         public DbSet<UserEntity> Users { get; set; }
         public LibraryDBContext( DbContextOptions<LibraryDBContext> options ) : base( options ) {
 
-            Database.EnsureCreated();
         }
         protected override void OnModelCreating( ModelBuilder modelBuilder ) {
 
             modelBuilder.Entity<BookEntity>().HasKey( x => x.Id );
-            modelBuilder.Entity<AuthorEntity>().HasKey( x => x.Id );
             modelBuilder.Entity<AuthorEntity>().HasMany( x => x.Books ).WithOne( x => x.Author ).HasForeignKey( x => x.AuthorId ).OnDelete( DeleteBehavior.Restrict );
             modelBuilder.Entity<UserEntity>().HasMany( x => x.Books ).WithOne( x => x.User ).HasForeignKey( x => x.ClientId ).OnDelete( DeleteBehavior.Restrict );
             modelBuilder.Entity<UserEntity>().HasIndex( x => x.Email ).IsUnique( true );
-            SeedUsers( modelBuilder );
-            var authors = SeedAuthors( modelBuilder );
-            SeedBooks( modelBuilder, authors );
+            //SeedUsers( modelBuilder );
+            //var authors = SeedAuthors( modelBuilder );
+            //SeedBooks( modelBuilder, authors );
         }
 
         private static void SeedBooks( ModelBuilder modelBuilder, List<AuthorEntity> authors ) {

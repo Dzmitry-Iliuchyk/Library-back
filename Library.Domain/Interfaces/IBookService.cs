@@ -2,16 +2,14 @@
 
 namespace Library.Domain.Interfaces {
     public interface IBookService {
-        Task<IList<Book>> GetAllBooksAsync();
-        Task<Book> GetBook( Guid bookId );
-        Task<Book> GetBook( string ISBN );
-        Task AddNewBook( string ISBN, string title, string genre, string description, Guid authorId );
-        Task DeleteBook( Guid bookId );
-        Task UpdateBook(Guid bookId, string ISBN, string title, string genre, string description, Guid authorId );
-        Task GiveBookToClient( Guid bookId, Guid clientId, TimeSpan periodToUse );
-        Task FreeBook( Guid bookId, Guid clientId );
-        Task AttachImageToBook( Guid bookId, FileStream imageStream );
-        Task GetImageToBook( Guid bookId );
+        Task<IList<Book>> GetAllBooksAsync( int skip, int take );
+        Task<Book> GetBookAsync( Guid bookId );
+        Task<Book> GetBookAsync( string ISBN );
+        Task CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId );
+        Task DeleteBookAsync( Guid bookId );
+        Task UpdateBookAsync(Guid bookId, string ISBN, string title, string genre, string description, Guid authorId );
+        Task GiveBookToClientAsync( Guid bookId, Guid clientId, int hoursToUse );
+        Task FreeBookAsync( Guid bookId, Guid clientId );
     }
 }
  

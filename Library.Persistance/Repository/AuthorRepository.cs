@@ -16,49 +16,52 @@ namespace Library.DataAccess.Repository {
             _mapper = mapper;
         }
 
-        public async Task AddAuthor( Author author ) {
+        public async Task AddAuthor( Author author, CancellationToken token = default ) {
             var authorEntity = _mapper.Map<AuthorEntity>( author );
-            await _dbContext.Authors.AddAsync( authorEntity );
+            await _dbContext.Authors.AddAsync( authorEntity, token );
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task UpdateAuthor( Author changedAuthor ) {
+        public async Task UpdateAuthor( Author changedAuthor, CancellationToken token = default ) {
             var authorEntity = _mapper.Map<AuthorEntity>( changedAuthor );
             _dbContext.Authors.Update( authorEntity );
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync( token );
         }
 
-        public async Task DeleteAuthor( Guid authorId ) {
+        public async Task DeleteAuthor( Guid authorId, CancellationToken token = default ) {
             var authorToDelete = await _dbContext
                 .Authors
-                .FirstOrDefaultAsync( a => a.Id == authorId )
+                .Include( a => a.Books )
+                .FirstOrDefaultAsync( a => a.Id == authorId, token )
                 ?? throw new AuthorNotFoundException();
+            if (authorToDelete.Books != null || authorToDelete.Books.Any()) {
+                throw new CannotDeleteAuthorWithBooksException( "Перед удалением автора необходимо удалит ьвсе его книги" );
+            }
             _dbContext.Authors.Remove( authorToDelete );
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync( token );
         }
 
-        public async Task<IList<Author>> GetAllAuthors() {
+        public async Task<IList<Author>> GetAllAuthors( CancellationToken token = default ) {
             var authorEntities = await _dbContext
                 .Authors
                 .AsNoTracking()
-                //.Include( a => a.Books )
-                .ToListAsync();
+                .ToListAsync( token );
             return _mapper.Map<IList<Author>>( authorEntities );
         }
 
-        public async Task<IList<Book>> GetAllBooksByAuthor( Guid authorId ) {
+        public async Task<IList<Book>> GetAllBooksByAuthor( Guid authorId, CancellationToken token = default ) {
             var bookEntities = await _dbContext
                .Authors
                .AsNoTracking()
                .Include( a => a.Books )
-               .Where(a=>a.Id == authorId)
+               .Where( a => a.Id == authorId )
                .SelectMany( x => x.Books )
                .ToListAsync();
 
             return _mapper.Map<IList<Book>>( bookEntities );
         }
 
-        public async Task<Author> GetAuthor( Guid authorId ) {
+        public async Task<Author> GetAuthor( Guid authorId, CancellationToken token = default ) {
             var authorEntity = await _dbContext
                 .Authors
                 .AsNoTracking()

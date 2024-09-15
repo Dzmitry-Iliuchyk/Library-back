@@ -41,17 +41,17 @@ namespace Library.DataAccess.Repository {
         }
 
         public async Task<IList<User>> GetAllUsers() {
-            var userEntities = await _dbContext.Users.Include(u=>u.Books).ToListAsync();
+            var userEntities = await _dbContext.Users.AsNoTracking().ToListAsync();
             return _mapper.Map<IList<User>>( userEntities );
         }
 
         public async Task<IList<Book>> GetBooks( Guid userId ) {
-            var bookEntities = await _dbContext.Users.Include(x=>x.Books).SelectMany(x=>x.Books).ToListAsync();
+            var bookEntities = await _dbContext.Users.AsNoTracking().Include(x=>x.Books).SelectMany(x=>x.Books).ToListAsync();
             return _mapper.Map<IList<Book>>( bookEntities );
         }
 
         public async Task<User> GetById( Guid id ) {
-            var userEntity= await _dbContext.Users.Include( x => x.Books ).FirstOrDefaultAsync(x=>x.Id == id);
+            var userEntity= await _dbContext.Users.AsNoTracking().Include( x => x.Books ).FirstOrDefaultAsync(x=>x.Id == id);
             return _mapper.Map<User>( userEntity );
         }
     }

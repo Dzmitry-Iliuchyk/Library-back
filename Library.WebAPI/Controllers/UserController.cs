@@ -29,8 +29,15 @@ namespace Library.WebAPI.Controllers {
         }
         [HttpPost( "[action]" )]
         public async Task<IResult> Register( RegisterUserRequest request ) {
-            await _userService.Create( request.UserName, request.Email, request.Password );
+            var token = await _userService.Register( request.UserName, request.Email, request.Password );
+            base.Response.Cookies.Append( "Auth-Cookies", token );
             return Results.Ok();
+        }
+        [HttpPost( "[action]" )]
+        public async Task<IResult> Login( LoginUserRequest request ) {
+            var token = await _userService.Login( request.Email, request.Password );
+            base.Response.Cookies.Append( "Auth-Cookies", token );
+            return Results.Ok(token);
         }
         [HttpPut( "[action]" )]
         public async Task<IResult> Update( UpdateUserRequest request ) {
@@ -42,5 +49,6 @@ namespace Library.WebAPI.Controllers {
             await _userService.Delete( userId );
             return Results.Ok();
         }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Library.Application.Auth.Interfaces;
 using Library.Application.Exceptions;
 using Library.Application.Interfaces;
 using Library.Domain.Interfaces;
@@ -11,6 +12,7 @@ namespace Library.Application.Implementations {
         private readonly IUnitOfWork _unit;
         private readonly IValidator<User> _validator;
         private readonly IPasswordHasher<User> _hasher;
+        private readonly IJwtProvider _jwt;
 
         public UserService( IUnitOfWork unitOfWork, IValidator<User> validator, IPasswordHasher<User> hasher ) {
             this._unit = unitOfWork;
@@ -18,11 +20,35 @@ namespace Library.Application.Implementations {
             this._hasher = hasher;
         }
 
-        public async Task Create( string userName, string email, string password ) {
-            var user = new User( Guid.NewGuid(), userName, email, _hasher.HashPassword( null, password ) );
-            _validator.ValidateAndThrow( user );
-            await _unit.userRepository.CreateUserAsync( user );
-            await _unit.Save();
+        public async Task<string> Register( string userName, string email, string password ) {
+            try {
+                _unit.CreateTransaction();
+                var user = new User( Guid.NewGuid(), userName, email, _hasher.HashPassword( null, password ) );
+                _validator.ValidateAndThrow( user );
+                await _unit.userRepository.CreateUserAsync( user );
+                await _unit.authRepository.AddUserToGroup( user, Auth.Enums.AccessGroupEnum.User );
+                var token = _jwt.GenerateToken( user );
+                await _unit.Save();
+                _unit.Commit();
+                return token; 
+            }
+            catch (Exception) {
+                _unit.Rollback();
+                throw;
+            }
+            
+        }
+
+        public async Task<string> Login( string email, string password ) {
+            var user = await _unit.userRepository.GetAsync( email );
+
+            var result = _hasher.VerifyHashedPassword( null, user.PasswordHash, password );
+
+            if (result == PasswordVerificationResult.Failed) {
+                throw new InvalidPasswordException("Пароль не подходит!");
+            }
+            var token = _jwt.GenerateToken( user );
+            return token;
         }
 
         public async Task Delete( Guid userId ) {
@@ -39,14 +65,14 @@ namespace Library.Application.Implementations {
         }
 
         public async Task<User> Get( Guid id ) {
-            return await _unit.userRepository.GetByIdAsync( id );
+            return await _unit.userRepository.GetAsync( id );
         }
 
         public async Task Update( Guid userId, string userName, string email, string password ) {
             try {
                 _unit.CreateTransaction();
                 var passwordHash = _hasher.HashPassword( null, password );
-                var userInDb = await _unit.userRepository.GetByIdAsync( userId );
+                var userInDb = await _unit.userRepository.GetAsync( userId );
                 var passwordResult = _hasher.VerifyHashedPassword( null, userInDb.PasswordHash, passwordHash );
                 if (passwordResult.HasFlag( PasswordVerificationResult.Failed )) {
                     throw new AccessDeniedException( "Пароль не верный!" );

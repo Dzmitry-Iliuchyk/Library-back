@@ -1,14 +1,23 @@
-﻿using Library.DataAccess.DataBase.Entities;
+﻿using Library.Application.Auth.Enums;
+using Library.DataAccess.DataBase.Configuration;
+using Library.DataAccess.DataBase.Entities;
+using Library.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace Library.DataAccess.DataBase.Contexts {
     public class LibraryDBContext: DbContext {
         public DbSet<BookEntity> Books { get; set; }
         public DbSet<AuthorEntity> Authors { get; set; }
         public DbSet<UserEntity> Users { get; set; }
-        public LibraryDBContext( DbContextOptions<LibraryDBContext> options ) : base( options ) {
+        public DbSet<AccessGroupEntity> Groups { get; set; }
+        public DbSet<PermissionEntity> Permissions { get; set; }
 
+        private readonly AuthorizationOptions _authorizationOptions;
+        public LibraryDBContext( DbContextOptions<LibraryDBContext> options, IOptions<AuthorizationOptions> authOptions ) : base( options ) {
+            _authorizationOptions = authOptions.Value;
         }
         protected override void OnModelCreating( ModelBuilder modelBuilder ) {
 
@@ -16,9 +25,36 @@ namespace Library.DataAccess.DataBase.Contexts {
             modelBuilder.Entity<AuthorEntity>().HasMany( x => x.Books ).WithOne( x => x.Author ).HasForeignKey( x => x.AuthorId ).OnDelete( DeleteBehavior.Restrict );
             modelBuilder.Entity<UserEntity>().HasMany( x => x.Books ).WithOne( x => x.User ).HasForeignKey( x => x.ClientId ).OnDelete( DeleteBehavior.Restrict );
             modelBuilder.Entity<UserEntity>().HasIndex( x => x.Email ).IsUnique( true );
+            AuthDbConfiguration.Configure( modelBuilder, _authorizationOptions );
             //SeedUsers( modelBuilder );
             //var authors = SeedAuthors( modelBuilder );
             //SeedBooks( modelBuilder, authors );
+            //AddAdmin( modelBuilder );
+
+        }
+
+        private static void AddAdmin( ModelBuilder modelBuilder ) {
+            var userId = Guid.NewGuid();
+            var hasher = new PasswordHasher<UserEntity>();
+            modelBuilder.Entity<UserEntity>().HasData( new UserEntity() {
+                Id = userId,
+                UserName = "admin",
+                PasswordHash = hasher.HashPassword( null, "admin" ),
+                Email = "admin@admin.com",
+
+            }
+            );
+            var groups = Enum
+            .GetValues<AccessGroupEnum>()
+                .Select( x => new AccessGroupEntity {
+                    Id = (int)x,
+                    Name = x.ToString(),
+                } );
+            var userAccessGroups = groups.Select( g => new UserAccessGroup {
+                UserId = userId,
+                GroupId = g.Id
+            } ).ToArray();
+            modelBuilder.Entity<UserAccessGroup>().HasData( userAccessGroups );
         }
 
         private static void SeedBooks( ModelBuilder modelBuilder, List<AuthorEntity> authors ) {
@@ -68,9 +104,14 @@ namespace Library.DataAccess.DataBase.Contexts {
                     Email = $"{guid}@test.test",
                     PasswordHash = hasher.HashPassword( null, guid.ToString() ),
                     UserName = $"user{i}",
+                    Groups = new List<AccessGroupEntity>()
                 };
                 users.Add( user );
             }
+            users.ForEach( x => x.Groups.Append( new AccessGroupEntity() {
+                Id = (int)AccessGroupEnum.User,
+                Name = AccessGroupEnum.User.ToString(),
+            } ) );
             modelBuilder.Entity<UserEntity>().HasData( users );
         }
         public static string GenerateISBN13() {

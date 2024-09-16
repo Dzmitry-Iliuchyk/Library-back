@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Library.DataAccess.DataBase.Contexts;
 using AutoMapper;
+using Library.Application.Auth.Interfaces;
 
 namespace Library.DataAccess.Repository {
     public class UnitOfWork: IUnitOfWork {
@@ -20,12 +21,14 @@ namespace Library.DataAccess.Repository {
         public IBookRepository bookRepository { get; private set; }
         public IAuthorRepository authorRepository { get; private set; }
 
+        public IAuthRepository authRepository  { get; private set; }
 
-        public UnitOfWork( LibraryDBContext context, IMapper mapper ) {
+    public UnitOfWork( LibraryDBContext context, IMapper mapper ) {
             _context = context;
             this.bookRepository = new BookRepository(context, mapper);
             this.authorRepository = new AuthorRepository( context, mapper );
             this.userRepository = new UserRepository( context, mapper );
+            this.authRepository = new AuthRepository( context );
         }
 
         public void CreateTransaction() {

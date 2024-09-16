@@ -4,6 +4,7 @@ using Library.DataAccess.Exceptions;
 using Library.Domain.Exceptions;
 using Library.WebAPI.Contracts.Middleware;
 using System.Net;
+using ApplicationException = Library.Application.Exceptions.ApplicationException;
 
 namespace Library.WebAPI.Middlewares {
     public class ExceptionMiddleware: IMiddleware {
@@ -11,7 +12,7 @@ namespace Library.WebAPI.Middlewares {
             try {
                 await next( context );
             }
-            catch(BookTakenException ex) {
+            catch (BookTakenException ex) {
                 await HandleDefaultException( context, ex, HttpStatusCode.BadRequest );
             }
             catch(DomainException ex) {

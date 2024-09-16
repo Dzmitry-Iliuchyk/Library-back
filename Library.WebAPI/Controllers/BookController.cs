@@ -14,7 +14,7 @@ namespace Library.WebAPI.Controllers {
             this._imageService = imageService;
         }
         [HttpGet( "[action]" )]
-        public async Task<IResult> GetAll( int skip, int take ) {
+        public async Task<IResult> GetBooks( int skip, int take ) {
             var books = await _bookService.GetBooksAsync( skip, take );
             return Results.Ok( books );
         }

@@ -10,6 +10,5 @@ namespace Library.Application.Helpers {
         public int Height {  get; set; }
         public string PathToImages { get; set; }
         public string PathToDefauldImage { get; set; }
-        //"U:\\std\\PreInternshipModsen\\Library\\Library.WebAPI\\images\\default.png";
     }
 }

@@ -54,18 +54,29 @@ namespace Library.DataAccess.Repository {
             var bookEntities = await _dbSet
                 .AsNoTracking()
                 .Include(x=>x.Books)
+                .SelectMany(x=>x.Books)
                 .Skip( skip )
                 .Take( take )
-                .SelectMany(x=>x.Books)
                 .ToListAsync();
             return _mapper.Map<IList<Book>>( bookEntities );
         }
 
-        public async Task<User> GetByIdAsync( Guid id ) {
+        public async Task<User> GetAsync( Guid id ) {
             var userEntity= await _dbSet
                 .AsNoTracking()
                 .Include( x => x.Books )
-                .FirstOrDefaultAsync(x=>x.Id == id);
+                .FirstOrDefaultAsync(x=>x.Id == id)
+                ?? throw new UserNotFoundException();
+            
+            return _mapper.Map<User>( userEntity );
+        }
+        public async Task<User> GetAsync( string email ) {
+            var userEntity= await _dbSet
+                .AsNoTracking()
+                .Include( x => x.Books )
+                .FirstOrDefaultAsync(x=>x.Email == email)
+                ?? throw new UserNotFoundException();
+
             return _mapper.Map<User>( userEntity );
         }
     }

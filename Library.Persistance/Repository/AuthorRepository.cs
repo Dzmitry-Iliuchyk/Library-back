@@ -51,9 +51,9 @@ namespace Library.DataAccess.Repository {
                .AsNoTracking()
                .Include( a => a.Books )
                .Where( a => a.Id == authorId )
+               .SelectMany( x => x.Books )
                .Skip( skip )
                .Take( take )
-               .SelectMany( x => x.Books )
                .ToListAsync();
 
             return _mapper.Map<IList<Book>>( bookEntities );

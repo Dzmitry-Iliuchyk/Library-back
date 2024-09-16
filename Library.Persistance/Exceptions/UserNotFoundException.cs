@@ -8,4 +8,5 @@ namespace Library.DataAccess.Exceptions {
     public class UserNotFoundException : DataAccessException {
         public override string Message => "Такого пользователя не существует!";
     }
+
 }

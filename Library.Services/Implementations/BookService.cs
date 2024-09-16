@@ -2,6 +2,7 @@
 using Library.Application.Interfaces;
 using Library.Domain.Interfaces;
 using Library.Domain.Models.Book;
+using System.Net;
 
 namespace Library.Application.Implementations {
     public class BookService: IBookService {
@@ -14,7 +15,13 @@ namespace Library.Application.Implementations {
             _imageService = imageService;
         }
         public async Task CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId ) {
-            var book = new FreeBook( Guid.NewGuid(), ISBN, title, genre, description, authorId );
+            var book = new FreeBook(
+                        id: Guid.NewGuid(),
+                        ISBN: ISBN,
+                        title: title,
+                        genre: genre,
+                        description: description,
+                        authorId: authorId );
             _validator.ValidateAndThrow( book );
             await _unit.bookRepository.CreateBookAsync( book );
         }
@@ -25,9 +32,24 @@ namespace Library.Application.Implementations {
                 Book updatedBook;
                 var bookInDb = await _unit.bookRepository.GetBookAsync( bookId );
                 if (bookInDb is TakenBook taken) {
-                    updatedBook = new TakenBook( bookId, taken.ClientId, ISBN, title, genre, description, authorId, taken.TakenAt, taken.ReturnTo );
+                    updatedBook = new TakenBook( 
+                        id: bookId,
+                        client_id: taken.ClientId,
+                        ISBN: ISBN,
+                        title: title, 
+                        genre: genre,
+                        description: description,
+                        authorId: authorId,
+                        takenAt: taken.TakenAt,
+                        returnTo: taken.ReturnTo );
                 } else
-                    updatedBook = new FreeBook( bookId, ISBN, title, genre, description, authorId );
+                    updatedBook = new FreeBook( 
+                        id: bookId,
+                        ISBN: ISBN,
+                        title: title,
+                        genre: genre,
+                        description: description,
+                        authorId: authorId );
                 _validator.ValidateAndThrow( updatedBook );
                 await _unit.bookRepository.UpdateBook( updatedBook );
                 await _unit.Save();

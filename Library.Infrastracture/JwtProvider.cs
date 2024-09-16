@@ -7,6 +7,10 @@ using System.Security.Claims;
 using System.Text;
 
 namespace Library.Infrastracture {
+    public enum CustumClaimTypes {
+        UserId,
+        Email
+    }
     public class JwtProvider: IJwtProvider {
         private readonly JwtOptions _options;
 
@@ -16,8 +20,8 @@ namespace Library.Infrastracture {
 
         public string GenerateToken( User user ) {
             var claims = new List<Claim>() {
-                new Claim("UserId", user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(CustumClaimTypes.UserId.ToString(), user.Id.ToString()),
+                new Claim(CustumClaimTypes.Email.ToString(), user.Email)
             };
 
             var token = new JwtSecurityToken(

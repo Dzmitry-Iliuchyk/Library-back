@@ -10,22 +10,22 @@ namespace Library.DataAccess.AutoMapper {
 
         public Book Convert( BookEntity source, Book destination, ResolutionContext context ) {
             if (source.BookType == BookType.Free) {
-                return new FreeBook( source.Id,
-                    source.Title,
-                    source.Genre,
-                    source.Description,
-                    source.ISBN,
-                    source.AuthorId);
+                return new FreeBook(id: source.Id,
+                    title: source.Title,
+                    genre: source.Genre,
+                    description: source.Description,
+                    ISBN: source.ISBN,
+                    authorId: source.AuthorId);
             } else if (source.BookType == BookType.Taken) {
-                return new TakenBook( source.Id,
-                    source.ClientId.Value,
-                    source.Title,
-                    source.Genre,
-                    source.Description,
-                    source.ISBN,
-                    source.AuthorId,
-                    source.TakenAt.Value,
-                    source.ReturnTo.Value );
+                return new TakenBook(id: source.Id,
+                    client_id: source.ClientId.Value,
+                    title: source.Title,
+                    genre: source.Genre,
+                    description: source.Description,
+                    ISBN: source.ISBN,
+                    authorId: source.AuthorId,
+                    takenAt: source.TakenAt.Value,
+                    returnTo: source.ReturnTo.Value );
             }
 
             throw new ArgumentException( "Invalid BookType" );

@@ -34,15 +34,16 @@ namespace Library.Application.Implementations {
             try {
                 _unit.CreateTransaction();
                 var authorToDelete = await _unit.authorRepository.GetAuthorAsync( authorId );
-                if (authorToDelete.Books != null || authorToDelete.Books.Any()) {
+                if (authorToDelete.Books != null && authorToDelete.Books.Any()) {
                     throw new CannotDeleteAuthorWithBooksException( "Перед удалением автора необходимо удалить все его книги" );
                 }
                 await _unit.authorRepository.DeleteAuthorAsync( authorId );
                 await _unit.Save();
                 _unit.Commit();
             }
-            catch (Exception) {
+            catch (Exception ex ) {
                 _unit.Rollback();
+
                 throw;
             }
 

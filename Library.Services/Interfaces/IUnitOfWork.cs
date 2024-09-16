@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Library.Application.Auth.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ namespace Library.Application.Interfaces {
 
         public IBookRepository bookRepository { get; }
         public IAuthorRepository authorRepository { get; }
+        public IAuthRepository authRepository { get; }
 
         void CreateTransaction();
 

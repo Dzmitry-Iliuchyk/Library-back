@@ -9,61 +9,58 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Library.DataAccess.Repository {
     public class AuthorRepository: IAuthorRepository {
-        private readonly LibraryDBContext _dbContext;
+        private readonly DbSet<AuthorEntity> _dbset;
         private readonly IMapper _mapper;
         public AuthorRepository( LibraryDBContext context, IMapper mapper ) {
-            _dbContext = context;
+            _dbset = context.Authors;
             _mapper = mapper;
         }
 
-        public async Task AddAuthor( Author author ) {
+        public async Task AddAuthorAsync( Author author ) {
             var authorEntity = _mapper.Map<AuthorEntity>( author );
-            await _dbContext.Authors.AddAsync( authorEntity );
-            await _dbContext.SaveChangesAsync();
+            await _dbset.AddAsync( authorEntity );
         }
 
-        public async Task UpdateAuthor( Author changedAuthor) {
+        public async Task UpdateAuthorAsync( Author changedAuthor ) {
             var authorEntity = _mapper.Map<AuthorEntity>( changedAuthor );
-            _dbContext.Authors.Update( authorEntity );
-            await _dbContext.SaveChangesAsync(  );
+            _dbset.Update( authorEntity );
+
         }
 
-        public async Task DeleteAuthor( Guid authorId) {
-            var authorToDelete = await _dbContext
-                .Authors
+        public async Task DeleteAuthorAsync( Guid authorId ) {
+            var authorToDelete = await _dbset
                 .Include( a => a.Books )
+                .AsNoTracking()
                 .FirstOrDefaultAsync( a => a.Id == authorId )
                 ?? throw new AuthorNotFoundException();
-            if (authorToDelete.Books != null || authorToDelete.Books.Any()) {
-                throw new CannotDeleteAuthorWithBooksException( "Перед удалением автора необходимо удалить все его книги" );
-            }
-            _dbContext.Authors.Remove( authorToDelete );
-            await _dbContext.SaveChangesAsync(  );
+
+            _dbset.Remove( authorToDelete );
         }
 
-        public async Task<IList<Author>> GetAllAuthors() {
-            var authorEntities = await _dbContext
-                .Authors
+        public async Task<IList<Author>> GetAuthorsAsync( int skip, int take ) {
+            var authorEntities = await _dbset
                 .AsNoTracking()
+                .Skip( skip )
+                .Take( take )
                 .ToListAsync();
             return _mapper.Map<IList<Author>>( authorEntities );
         }
 
-        public async Task<IList<Book>> GetAllBooksByAuthor( Guid authorId ) {
-            var bookEntities = await _dbContext
-               .Authors
+        public async Task<IList<Book>> GetBooksByAuthorAsync( Guid authorId, int skip, int take ) {
+            var bookEntities = await _dbset
                .AsNoTracking()
                .Include( a => a.Books )
                .Where( a => a.Id == authorId )
+               .Skip( skip )
+               .Take( take )
                .SelectMany( x => x.Books )
                .ToListAsync();
 
             return _mapper.Map<IList<Book>>( bookEntities );
         }
 
-        public async Task<Author> GetAuthor( Guid authorId ) {
-            var authorEntity = await _dbContext
-                .Authors
+        public async Task<Author> GetAuthorAsync( Guid authorId ) {
+            var authorEntity = await _dbset
                 .AsNoTracking()
                 .Include( x => x.Books )
                 .FirstOrDefaultAsync( a => a.Id == authorId )

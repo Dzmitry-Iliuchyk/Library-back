@@ -3,11 +3,11 @@ using Library.Domain.Models.Book;
 
 namespace Library.Domain.Interfaces {
     public interface IAuthorService {
-        Task<IList<Author>> GetAllAuthors();
-        Task<Author> GetAuthor( Guid authorId );
-        Task CreateAuthor( string FirstName, string LastName, DateTime Birthday, string Country);
-        Task UpdateAuthor( Guid Id, string FirstName, string LastName, DateTime Birthday, string Country );
-        Task DeleteAuthor( Guid authorId );
-        Task<IList<Book>> GetAllBooks( Guid authorId );
+        Task<IList<Author>> GetAuthorsAsync( int skip, int take );
+        Task<Author> GetAuthorAsync( Guid authorId );
+        Task CreateAuthorAsync( string FirstName, string LastName, DateTime Birthday, string Country);
+        Task UpdateAuthorAsync( Guid Id, string FirstName, string LastName, DateTime Birthday, string Country );
+        Task DeleteAuthorAsync( Guid authorId );
+        Task<IList<Book>> GetBooksAsync( Guid authorId, int skip, int take );
     }
 }

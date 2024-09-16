@@ -12,33 +12,33 @@ namespace Library.WebAPI.Controllers {
 
         }
         [HttpGet( "[action]" )]
-        public async Task<IResult> GetAllAuthors( ) {
-            var authors = await _authorService.GetAllAuthors(  );
+        public async Task<IResult> GetAuthors( int skip, int take ) {
+            var authors = await _authorService.GetAuthorsAsync( skip, take );
             return Results.Ok( authors );
         }
         [HttpGet( "{authorId}/getBooks" )]
-        public async Task<IResult> GetAllBooksByAuthor( [FromRoute] Guid authorId ) {
-            var books = await _authorService.GetAllBooks( authorId );
+        public async Task<IResult> GetAllBooksByAuthor( [FromRoute] Guid authorId, int skip, int take ) {
+            var books = await _authorService.GetBooksAsync( authorId, skip, take  );
             return Results.Ok( books );
         }
         [HttpGet( "{authorId}/get" )]
         public async Task<IResult> Get( [FromRoute] Guid authorId ) {
-            await _authorService.GetAuthor( authorId);
-            return Results.Ok();
+            var author = await _authorService.GetAuthorAsync( authorId);
+            return Results.Ok(author);
         }
         [HttpDelete( "{authorId}/delete" )]
         public async Task<IResult> DeleteAuthor( [FromRoute] Guid authorId ) {
-            await _authorService.DeleteAuthor( authorId );
+            await _authorService.DeleteAuthorAsync( authorId );
             return Results.Ok();
         }
         [HttpPut( "[action]" )]
         public async Task<IResult> UpdateAuthor( UpdateAuthorRequest request) {
-            await _authorService.UpdateAuthor( request.Id, request.FirstName, request.LastName, request.Birthday, request.Country );
+            await _authorService.UpdateAuthorAsync( request.Id, request.FirstName, request.LastName, request.Birthday, request.Country );
             return Results.Ok();
         }
         [HttpPost( "[action]" )]
         public async Task<IResult> CreateAuthor( CreateAuthorRequest request) {
-            await _authorService.CreateAuthor( request.FirstName, request.LastName, request.Birthday, request.Country  );
+            await _authorService.CreateAuthorAsync( request.FirstName, request.LastName, request.Birthday, request.Country  );
             return Results.Ok();
         }
     }

@@ -8,8 +8,8 @@ using System.Security.AccessControl;
 namespace Library.DataAccess.AutoMapper {
     public class DataBaseMapping: Profile {
         public DataBaseMapping() {
-            CreateMap<UserEntity, User>();
-            CreateMap<AuthorEntity, Author>();
+            CreateMap<UserEntity, User>().ReverseMap();
+            CreateMap<AuthorEntity, Author>().ReverseMap();
             CreateMap<BookEntity, Book>()
        .ConvertUsing<BookEntityToBookConverter>();
             CreateMap<Book, BookEntity>()

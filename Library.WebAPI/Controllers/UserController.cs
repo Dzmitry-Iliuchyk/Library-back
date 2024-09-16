@@ -13,8 +13,8 @@ namespace Library.WebAPI.Controllers {
         }
 
         [HttpGet( "[action]" )]
-        public async Task<IResult> GetAllUsers() {
-            var users = await _userService.GetAll();
+        public async Task<IResult> GetAllUsers( int skip, int take ) {
+            var users = await _userService.GetUsers( skip, take);
             return Results.Ok( users );
         }
         [HttpGet( "{userId}/[action]" )]
@@ -23,8 +23,8 @@ namespace Library.WebAPI.Controllers {
             return Results.Ok( user );
         }
         [HttpGet( "{userId}/getBooks" )]
-        public async Task<IResult> GetBooks( [FromRoute] Guid userId ) {
-            var books = await _userService.GetBooks( userId );
+        public async Task<IResult> GetBooks([FromRoute] Guid userId, int skip, int take ) {
+            var books = await _userService.GetBooks( userId, skip, take );
             return Results.Ok( books );
         }
         [HttpPost( "[action]" )]

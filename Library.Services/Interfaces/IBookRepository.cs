@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Library.Application.Interfaces {
     public interface IBookRepository {
-        Task<IList<Book>> GetAllBooksAsync(int skip, int take);
-        Task<Book> GetBook( Guid bookId );
-        Task<Book> GetBook( string ISBN );
-        Task AddNewBook( Book book );
-        Task DeleteBook( Guid bookId );
+        Task<IList<Book>> GetBooksAsync(int skip, int take);
+        Task<Book> GetBookAsync( Guid bookId );
+        Task<Book> GetBookAsync( string ISBN );
+        Task CreateBookAsync( Book book );
+        Task DeleteBookAsync( Guid bookId );
         Task UpdateBook( Book changedBook );
     }
 }

@@ -14,44 +14,58 @@ using System.Threading.Tasks;
 
 namespace Library.DataAccess.Repository {
     public class UserRepository: IUserRepository {
-        private readonly LibraryDBContext _dbContext;
+        private readonly DbSet<UserEntity> _dbSet;
         private readonly IMapper _mapper;
         public UserRepository(LibraryDBContext context, IMapper mapper) {
-            _dbContext = context;
+            _dbSet = context.Users;
             _mapper = mapper;
         }
 
-
-        public async Task UpdateUser( User updatedUser ) {
+        public Task UpdateUser( User updatedUser ) {
             var userEntity = _mapper.Map<UserEntity>( updatedUser );
-            _dbContext.Users.Update( userEntity );
-            await _dbContext.SaveChangesAsync();
+            _dbSet.Update( userEntity );
+            return Task.CompletedTask;
+
         }
-        public async Task CreateUser( User user ) {
+        public async Task CreateUserAsync( User user ) {
             var userEntity = _mapper.Map<UserEntity>( user );
-            await _dbContext.Users.AddAsync( userEntity );
-            await _dbContext.SaveChangesAsync();
+            await _dbSet.AddAsync( userEntity );
         }
 
-        public async Task DeleteUser( Guid userId ) {
-            var userToDelete = await _dbContext.Users.FirstOrDefaultAsync()
+        public async Task DeleteUserAsync( Guid userId ) {
+            var userToDelete = await _dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync()
                 ?? throw new UserNotFoundException();
-            _dbContext.Users.Remove( userToDelete );
-            await _dbContext.SaveChangesAsync();
+            _dbSet.Remove( userToDelete );
+
         }
 
-        public async Task<IList<User>> GetAllUsers() {
-            var userEntities = await _dbContext.Users.AsNoTracking().ToListAsync();
+        public async Task<IList<User>> GetUsersAsync( int skip, int take ) {
+            var userEntities = await _dbSet
+                .AsNoTracking()
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
             return _mapper.Map<IList<User>>( userEntities );
         }
 
-        public async Task<IList<Book>> GetBooks( Guid userId ) {
-            var bookEntities = await _dbContext.Users.AsNoTracking().Include(x=>x.Books).SelectMany(x=>x.Books).ToListAsync();
+        public async Task<IList<Book>> GetBooksAsync( Guid userId, int skip, int take ) {
+            var bookEntities = await _dbSet
+                .AsNoTracking()
+                .Include(x=>x.Books)
+                .Skip( skip )
+                .Take( take )
+                .SelectMany(x=>x.Books)
+                .ToListAsync();
             return _mapper.Map<IList<Book>>( bookEntities );
         }
 
-        public async Task<User> GetById( Guid id ) {
-            var userEntity= await _dbContext.Users.AsNoTracking().Include( x => x.Books ).FirstOrDefaultAsync(x=>x.Id == id);
+        public async Task<User> GetByIdAsync( Guid id ) {
+            var userEntity= await _dbSet
+                .AsNoTracking()
+                .Include( x => x.Books )
+                .FirstOrDefaultAsync(x=>x.Id == id);
             return _mapper.Map<User>( userEntity );
         }
     }

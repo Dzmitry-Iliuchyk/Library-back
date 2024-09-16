@@ -15,7 +15,7 @@ namespace Library.WebAPI.Controllers {
         }
         [HttpGet( "[action]" )]
         public async Task<IResult> GetAll( int skip, int take ) {
-            var books = await _bookService.GetAllBooksAsync( skip, take );
+            var books = await _bookService.GetBooksAsync( skip, take );
             return Results.Ok( books );
         }
         [HttpGet( "{ISBN}/[action]" )]

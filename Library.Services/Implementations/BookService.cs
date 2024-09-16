@@ -5,59 +5,86 @@ using Library.Domain.Models.Book;
 
 namespace Library.Application.Implementations {
     public class BookService: IBookService {
-        private readonly IBookRepository _bookRepository;
+        private readonly IUnitOfWork _unit;
         private readonly IImageService _imageService;
         private readonly IValidator<Book> _validator;
-        public BookService( IBookRepository bookRepository, IValidator<Book> validator, IImageService imageService  ) {
-            _bookRepository = bookRepository;
+        public BookService( IUnitOfWork unit, IValidator<Book> validator, IImageService imageService ) {
+            _unit = unit;
             _validator = validator;
             _imageService = imageService;
         }
         public async Task CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId ) {
             var book = new FreeBook( Guid.NewGuid(), ISBN, title, genre, description, authorId );
             _validator.ValidateAndThrow( book );
-            await _bookRepository.AddNewBook( book );
+            await _unit.bookRepository.CreateBookAsync( book );
         }
 
         public async Task UpdateBookAsync( Guid bookId, string ISBN, string title, string genre, string description, Guid authorId ) {
-            Book updatedBook;
-            var bookInDb = await _bookRepository.GetBook( bookId );
-            if (bookInDb is TakenBook taken) {
-                updatedBook = new TakenBook( bookId, taken.ClientId, ISBN, title, genre, description, authorId, taken.TakenAt, taken.ReturnTo );
-            } else
-                updatedBook = new FreeBook( bookId, ISBN, title, genre, description, authorId );
-            _validator.ValidateAndThrow( updatedBook );
-            await _bookRepository.UpdateBook( updatedBook );
+            try {
+                _unit.CreateTransaction();
+                Book updatedBook;
+                var bookInDb = await _unit.bookRepository.GetBookAsync( bookId );
+                if (bookInDb is TakenBook taken) {
+                    updatedBook = new TakenBook( bookId, taken.ClientId, ISBN, title, genre, description, authorId, taken.TakenAt, taken.ReturnTo );
+                } else
+                    updatedBook = new FreeBook( bookId, ISBN, title, genre, description, authorId );
+                _validator.ValidateAndThrow( updatedBook );
+                await _unit.bookRepository.UpdateBook( updatedBook );
+                await _unit.Save();
+                _unit.Commit();
+            }
+            catch (Exception) {
+                _unit.Rollback();
+                throw;
+            }
         }
 
         public async Task DeleteBookAsync( Guid bookId ) {
-            
-            await _bookRepository.DeleteBook( bookId );
-            _imageService.DeleteImage(bookId);
+            try {
+                _unit.CreateTransaction();
+                await _unit.bookRepository.DeleteBookAsync( bookId );
+                _imageService.DeleteImage( bookId );
+                await _unit.Save();
+                _unit.Commit();
+            }
+            catch (Exception) {
+                _unit.Rollback();
+                throw;
+            }
         }
 
         public async Task FreeBookAsync( Guid bookId, Guid clientId ) {
-            var book = await _bookRepository.GetBook( bookId );
+            var book = await _unit.bookRepository.GetBookAsync( bookId );
             var freeBook = book.Free( clientId );
-            await _bookRepository.UpdateBook( freeBook );
+            await _unit.bookRepository.UpdateBook( freeBook );
+            await _unit.Save();
         }
         public async Task GiveBookToClientAsync( Guid bookId, Guid clientId, int hoursToUse ) {
-            var book = await _bookRepository.GetBook( bookId );
-            var freeBook = book.Take( clientId, TimeSpan.FromHours( hoursToUse ) );
-            _validator.ValidateAndThrow( freeBook );
-            await _bookRepository.UpdateBook( freeBook );
+            try {
+                var book = await _unit.bookRepository.GetBookAsync( bookId );
+                var freeBook = book.Take( clientId, TimeSpan.FromHours( hoursToUse ) );
+                _validator.ValidateAndThrow( freeBook );
+                await _unit.bookRepository.UpdateBook( freeBook );
+                await _unit.Save();
+                _unit.Commit();
+            }
+            catch (Exception) {
+                _unit.Rollback();
+                throw;
+            }
+
         }
 
-        public async Task<IList<Book>> GetAllBooksAsync(int skip, int take) {
-            return await _bookRepository.GetAllBooksAsync(skip, take);
+        public async Task<IList<Book>> GetBooksAsync( int skip, int take ) {
+            return await _unit.bookRepository.GetBooksAsync( skip, take );
         }
 
         public async Task<Book> GetBookAsync( Guid bookId ) {
-            return await _bookRepository.GetBook( bookId );
+            return await _unit.bookRepository.GetBookAsync( bookId );
         }
 
         public async Task<Book> GetBookAsync( string ISBN ) {
-            return await _bookRepository.GetBook( ISBN );
+            return await _unit.bookRepository.GetBookAsync( ISBN );
         }
     }
 }

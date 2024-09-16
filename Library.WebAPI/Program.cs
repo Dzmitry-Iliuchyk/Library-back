@@ -22,9 +22,10 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<LibraryDBContext>(opt=> {
     opt.UseNpgsql(configuration.GetConnectionString(nameof( LibraryDBContext ) ));
 } );
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
-builder.Services.AddScoped<IBookRepository, BookRepository>();
+//builder.Services.AddScoped<IUserRepository, UserRepository>();
+//builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+//builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();

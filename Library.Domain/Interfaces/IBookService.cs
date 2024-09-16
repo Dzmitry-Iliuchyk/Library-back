@@ -2,7 +2,7 @@
 
 namespace Library.Domain.Interfaces {
     public interface IBookService {
-        Task<IList<Book>> GetAllBooksAsync( int skip, int take );
+        Task<IList<Book>> GetBooksAsync( int skip, int take );
         Task<Book> GetBookAsync( Guid bookId );
         Task<Book> GetBookAsync( string ISBN );
         Task CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId );

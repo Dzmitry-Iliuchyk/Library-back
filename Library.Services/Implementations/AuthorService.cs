@@ -16,7 +16,11 @@ namespace Library.Application.Implementations {
         }
 
         public async Task CreateAuthorAsync( string firstName, string lastName, DateTime birthday, string country ) {
-            var author = new Author( Guid.NewGuid(), firstName, lastName, birthday, country );
+            var author = new Author(id: Guid.NewGuid(),
+                firstName: firstName,
+                lastName: lastName,
+                birthday: birthday,
+                country: country );
             _validator.ValidateAndThrow( author );
             await _unit.authorRepository.AddAuthorAsync( author );
             await _unit.Save();
@@ -24,7 +28,11 @@ namespace Library.Application.Implementations {
 
         public async Task UpdateAuthorAsync( Guid id, string firstName, string lastName, DateTime birthday, string country ) {
             var authorInDb = await _unit.authorRepository.GetAuthorAsync( id );
-            var updatedAuthor = new Author( authorInDb.Id, firstName, lastName, birthday, country );
+            var updatedAuthor = new Author(id: authorInDb.Id, 
+                firstName: firstName, 
+                lastName: lastName, 
+                birthday: birthday, 
+                country: country );
             _validator.ValidateAndThrow( updatedAuthor );
             await _unit.authorRepository.UpdateAuthorAsync( updatedAuthor );
             await _unit.Save();

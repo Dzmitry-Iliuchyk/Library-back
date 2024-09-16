@@ -9,7 +9,7 @@ namespace Library.WebAPI.Controllers {
         private readonly IAuthorService _authorService;
         public AuthorController( IAuthorService authorService ) {
             _authorService = authorService;
-
+           
         }
         [HttpGet( "[action]" )]
         public async Task<IResult> GetAuthors( int skip, int take ) {

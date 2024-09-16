@@ -2,11 +2,11 @@
 
 namespace Library.Domain.Models {
     public class Author: IEquatable<Author> {
-        public Author( Guid id, string firstName, string lastName, DateTime birstday, string country, IEnumerable<Book.Book>? books = null ) {
+        public Author( Guid id, string firstName, string lastName, DateTime birthday, string country, IEnumerable<Book.Book>? books = null ) {
             Id = id;
             this.FirstName = string.IsNullOrEmpty( firstName ) ? throw new ArgumentNullException( nameof( firstName ) ): firstName;
             this.LastName = string.IsNullOrEmpty( lastName ) ? throw new ArgumentNullException( nameof( lastName ) ) :lastName  ;
-            this.Birthday = birstday;
+            this.Birthday = birthday;
             this.Country = string.IsNullOrEmpty( country ) ? throw new ArgumentNullException( nameof( country ) ) : country;
             this.Books = books;
         }

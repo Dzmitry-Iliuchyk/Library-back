@@ -23,7 +23,10 @@ namespace Library.Application.Implementations {
         public async Task<string> Register( string userName, string email, string password ) {
             try {
                 _unit.CreateTransaction();
-                var user = new User( Guid.NewGuid(), userName, email, _hasher.HashPassword( null, password ) );
+                var user = new User( id:Guid.NewGuid(),
+                    userName: userName,
+                    email: email,
+                    passwordHash: _hasher.HashPassword( null, password ) );
                 _validator.ValidateAndThrow( user );
                 await _unit.userRepository.CreateUserAsync( user );
                 await _unit.authRepository.AddUserToGroup( user, Auth.Enums.AccessGroupEnum.User );
@@ -77,7 +80,10 @@ namespace Library.Application.Implementations {
                 if (passwordResult.HasFlag( PasswordVerificationResult.Failed )) {
                     throw new AccessDeniedException( "Пароль не верный!" );
                 }
-                var user = new User( userId, userName, email, passwordHash );
+                var user = new User(id: userId,
+                    userName: userName,
+                    email: email,
+                    passwordHash: passwordHash );
                 _validator.ValidateAndThrow( user );
                 await _unit.userRepository.UpdateUser( user );
                 await _unit.Save();

@@ -6,7 +6,7 @@ namespace Library.Application.Validator {
     public class UserValidator: AbstractValidator<User> {
         public UserValidator() {
             RuleFor( user => user.Id ).NotEmpty();
-            RuleFor( user => user.UserName ).NotEmpty().MinimumLength(8);
+            RuleFor( user => user.UserName ).NotEmpty().MinimumLength(5);
             RuleFor( user => user.Email ).EmailAddress( EmailValidationMode.AspNetCoreCompatible ).NotEmpty();
             RuleFor( user => user.PasswordHash ).NotEmpty();
             When( user => user.Books?.Count()>0, () => {

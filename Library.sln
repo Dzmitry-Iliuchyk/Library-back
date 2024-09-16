@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Application", "Libr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.DataAccess", "Library.Persistance\Library.DataAccess.csproj", "{4500E2C4-44E2-46DD-A0A8-3A9311950518}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Infrastracture", "Library.Infrastracture\Library.Infrastracture.csproj", "{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{4500E2C4-44E2-46DD-A0A8-3A9311950518}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4500E2C4-44E2-46DD-A0A8-3A9311950518}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4500E2C4-44E2-46DD-A0A8-3A9311950518}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

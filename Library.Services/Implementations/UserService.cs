@@ -12,12 +12,13 @@ namespace Library.Application.Implementations {
         private readonly IUnitOfWork _unit;
         private readonly IValidator<User> _validator;
         private readonly IPasswordHasher<User> _hasher;
-        private readonly IJwtProvider _jwt;
+        private readonly ITokenService _tokenService;
 
-        public UserService( IUnitOfWork unitOfWork, IValidator<User> validator, IPasswordHasher<User> hasher ) {
+        public UserService( IUnitOfWork unitOfWork, IValidator<User> validator, IPasswordHasher<User> hasher, ITokenService tokenService ) {
             this._unit = unitOfWork;
             this._validator = validator;
             this._hasher = hasher;
+            this._tokenService = tokenService;
         }
 
         public async Task<string> Register( string userName, string email, string password ) {
@@ -29,10 +30,11 @@ namespace Library.Application.Implementations {
                     passwordHash: _hasher.HashPassword( null, password ) );
                 _validator.ValidateAndThrow( user );
                 await _unit.userRepository.CreateUserAsync( user );
+                await _unit.Save();
                 await _unit.authRepository.AddUserToGroup( user, Auth.Enums.AccessGroupEnum.User );
-                var token = _jwt.GenerateToken( user );
                 await _unit.Save();
                 _unit.Commit();
+                var token = _tokenService.GenerateToken( user );
                 return token; 
             }
             catch (Exception) {
@@ -50,7 +52,7 @@ namespace Library.Application.Implementations {
             if (result == PasswordVerificationResult.Failed) {
                 throw new InvalidPasswordException("Пароль не подходит!");
             }
-            var token = _jwt.GenerateToken( user );
+            var token = _tokenService.GenerateToken( user );
             return token;
         }
 

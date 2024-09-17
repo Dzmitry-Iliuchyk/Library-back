@@ -28,7 +28,7 @@ namespace Library.DataAccess.Repository {
             this.bookRepository = new BookRepository(context, mapper);
             this.authorRepository = new AuthorRepository( context, mapper );
             this.userRepository = new UserRepository( context, mapper );
-            this.authRepository = new AuthRepository( context );
+            this.authRepository = new AuthRepository( context ,mapper );
         }
 
         public void CreateTransaction() {
@@ -49,7 +49,6 @@ namespace Library.DataAccess.Repository {
        
         public async Task Save() {
             try {
-
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex) {

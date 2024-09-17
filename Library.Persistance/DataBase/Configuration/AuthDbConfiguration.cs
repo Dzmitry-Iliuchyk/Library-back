@@ -47,7 +47,7 @@ namespace Library.DataAccess.DataBase.Configuration {
                 } );
             modelBuilder.Entity<AccessGroupEntity>().HasData( groups );
 
-            var groupPermissions = authOptions.GroupPermissions.SelectMany( gp => gp.Permissions
+            var groupPermissions = authOptions.AccessGroupPermission.SelectMany( gp => gp.Permissions
                 .Select( p => new Entities.AccessGroupPermission {
                     GroupId = (int)Enum.Parse<AccessGroupEnum>( gp.Group ),
                     PermissionId = (int)Enum.Parse<PermissionEnum>( p )

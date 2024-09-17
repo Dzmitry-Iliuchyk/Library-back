@@ -13,7 +13,7 @@ namespace Library.WebAPI.Controllers {
         }
 
         [HttpGet( "[action]" )]
-        public async Task<IResult> GetAllUsers( int skip, int take ) {
+        public async Task<IResult> GetUsers( int skip, int take ) {
             var users = await _userService.GetUsers( skip, take);
             return Results.Ok( users );
         }

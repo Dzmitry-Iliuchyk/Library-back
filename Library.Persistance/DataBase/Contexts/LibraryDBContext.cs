@@ -26,10 +26,10 @@ namespace Library.DataAccess.DataBase.Contexts {
             modelBuilder.Entity<UserEntity>().HasMany( x => x.Books ).WithOne( x => x.User ).HasForeignKey( x => x.ClientId ).OnDelete( DeleteBehavior.Restrict );
             modelBuilder.Entity<UserEntity>().HasIndex( x => x.Email ).IsUnique( true );
             AuthDbConfiguration.Configure( modelBuilder, _authorizationOptions );
-            //SeedUsers( modelBuilder );
-            //var authors = SeedAuthors( modelBuilder );
-            //SeedBooks( modelBuilder, authors );
-            //AddAdmin( modelBuilder );
+            SeedUsers( modelBuilder );
+            var authors = SeedAuthors( modelBuilder );
+            SeedBooks( modelBuilder, authors );
+            AddAdmin( modelBuilder );
 
         }
 
@@ -60,7 +60,7 @@ namespace Library.DataAccess.DataBase.Contexts {
         private static void SeedBooks( ModelBuilder modelBuilder, List<AuthorEntity> authors ) {
             List<BookEntity> books = new List<BookEntity>();
             var rand = new Random();
-            for (int i = 0; i < 5000; i++) {
+            for (int i = 0; i < 50; i++) {
                 var guid = Guid.NewGuid();
                 var user = new BookEntity {
                     Id = guid,
@@ -79,7 +79,7 @@ namespace Library.DataAccess.DataBase.Contexts {
         private static List<AuthorEntity> SeedAuthors( ModelBuilder modelBuilder ) {
             List<AuthorEntity> authors = new List<AuthorEntity>();
             var rand = new Random();
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < 5; i++) {
                 var guid = Guid.NewGuid();
                 var author = new AuthorEntity {
                     Id = guid,
@@ -97,7 +97,7 @@ namespace Library.DataAccess.DataBase.Contexts {
         private static void SeedUsers( ModelBuilder modelBuilder ) {
             List<UserEntity> users = new List<UserEntity>();
             var hasher = new PasswordHasher<UserEntity>();
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < 5; i++) {
                 var guid = Guid.NewGuid();
                 var user = new UserEntity {
                     Id = guid,

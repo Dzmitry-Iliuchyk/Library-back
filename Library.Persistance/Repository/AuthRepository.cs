@@ -14,9 +14,10 @@ namespace Library.DataAccess.Repository {
         private readonly IMapper _mapper;
 
 
-        public AuthRepository( LibraryDBContext context ) {
+        public AuthRepository( LibraryDBContext context, IMapper mapper ) {
             _groups = context.Set<AccessGroupEntity>();
             _users = context.Set<UserEntity>();
+            _mapper = mapper;
         }
 
         public async Task AddUserToGroup( User user, AccessGroupEnum group ) {
@@ -24,16 +25,20 @@ namespace Library.DataAccess.Repository {
                 .AsNoTracking()
                 .FirstOrDefaultAsync( r => r.Name == group.ToString() )
                 ?? throw new GroupNotFountException();
-            var userEntity = _mapper.Map<UserEntity>( user );
-            searchedGroup.Users?.Add( userEntity );
+            UserEntity userEntity;
+            userEntity = MapUserToUserEntity( user );
+            userEntity.Groups.Add( searchedGroup );
+            _users.Update( userEntity );
         }
+
         public async Task RemoveUserFromGroup( User user, AccessGroupEnum group ) {
             var searchedGroup = await _groups
                 .AsNoTracking()
                 .FirstOrDefaultAsync( r => r.Name == group.ToString() )
                 ?? throw new GroupNotFountException();
-            var userEntity = _mapper.Map<UserEntity>( user );
-            searchedGroup.Users?.Remove( userEntity );
+            var userEntity = MapUserToUserEntity( user );
+            userEntity.Groups.Remove( searchedGroup );
+            _users.Update( userEntity );
         }
         public Task<HashSet<AccessGroupEnum>> GetUserGroups( Guid userId ) {
             var groups = _users
@@ -60,5 +65,15 @@ namespace Library.DataAccess.Repository {
                 .ToHashSet();
             return Task.FromResult( permissions );
         }
+
+        private UserEntity MapUserToUserEntity( User user ) {
+            UserEntity userEntity;
+            if (_users.Local.Any( e => e.Id == user.Id )) {
+                userEntity = _users.Local.First( u => u.Id == user.Id );
+            } else
+                userEntity = _mapper.Map<UserEntity>( user );
+            return userEntity;
+        }
+
     }
 }

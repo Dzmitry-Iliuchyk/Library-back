@@ -1,24 +1,27 @@
 using FluentValidation;
+using Library.Application.Auth.Enums;
+using Library.Application.Auth.Interfaces;
 using Library.Application.Helpers;
 using Library.Application.Implementations;
 using Library.Application.Interfaces;
 using Library.Application.Validator;
 using Library.DataAccess.AutoMapper;
-using Library.DataAccess.DataBase.Configuration;
 using Library.DataAccess.DataBase.Contexts;
 using Library.DataAccess.Repository;
 using Library.Domain.Interfaces;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using Library.Infrastracture;
+using Library.Infrastracture.Auth;
+using Library.Infrastracture.Jwt;
 using Library.WebAPI.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SixLabors.ImageSharp;
-using System.Reflection;
 using System.Text;
+using AuthorizationOptions = Library.DataAccess.DataBase.Configuration.AuthorizationOptions;
 
 var builder = WebApplication.CreateBuilder( args );
 var configuration = builder.Configuration;
@@ -32,8 +35,8 @@ builder.Services.Configure<ImageOptions>( configuration.GetSection( nameof( Imag
 builder.Services.Configure<JwtOptions>( jwtOptions );
 builder.Services.Configure<AuthorizationOptions>( authOptions );
 
-builder.Services.AddDbContext<LibraryDBContext>(opt=> {
-    opt.UseNpgsql(configuration.GetConnectionString(nameof( LibraryDBContext ) ));
+builder.Services.AddDbContext<LibraryDBContext>( opt => {
+    opt.UseNpgsql( configuration.GetConnectionString( nameof( LibraryDBContext ) ) );
 } );
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -42,6 +45,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 
 builder.Services.AddScoped<IValidator<User>, UserValidator>();
 builder.Services.AddScoped<IValidator<Author>, AuthorValidator>();
@@ -49,13 +54,13 @@ builder.Services.AddScoped<IValidator<Book>, BookValidator>();
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, GroupAuthorizationHandler>();
 builder.Services.AddAuthentication( JwtBearerDefaults.AuthenticationScheme )
                 .AddJwtBearer( JwtBearerDefaults.AuthenticationScheme, options => {
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters() {
-                        ValidateIssuer = true,
-                        ValidIssuer = jwtOptions.GetValue<string>( nameof( JwtOptions.Issuer ) ),
-                        ValidateAudience = true,
-                        ValidAudience = jwtOptions.GetValue<string>( nameof( JwtOptions.Audience ) ),
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey( Encoding.UTF8.GetBytes(
@@ -69,7 +74,10 @@ builder.Services.AddAuthentication( JwtBearerDefaults.AuthenticationScheme )
                         }
                     };
                 } );
-
+builder.Services.AddAuthorization( opt => {
+    opt.AddPolicy( CustomPolicyNames.CanRead, p => p.AddRequirements( new PermissionRequirement( [ PermissionEnum.Read ] ) ) );
+    opt.AddPolicy( CustomPolicyNames.Admin, p => p.AddRequirements( new GroupRequirement( [ AccessGroupEnum.Admin ] ) ) );
+   } );
 builder.Services.AddTransient<ExceptionMiddleware>();
 
 builder.Services.AddAutoMapper( typeof( DataBaseMapping ) );
@@ -87,6 +95,7 @@ if (app.Environment.IsDevelopment()) {
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

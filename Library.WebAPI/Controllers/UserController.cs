@@ -1,4 +1,5 @@
-﻿using Library.Domain.Interfaces;
+﻿using Library.DataAccess.DataBase.Entities;
+using Library.Domain.Interfaces;
 using Library.WebAPI.Contracts.User;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,15 +30,24 @@ namespace Library.WebAPI.Controllers {
         }
         [HttpPost( "[action]" )]
         public async Task<IResult> Register( RegisterUserRequest request ) {
-            var token = await _userService.Register( request.UserName, request.Email, request.Password );
+            var (token, refreshToken) = await _userService.Register( request.UserName, request.Email, request.Password );
             base.Response.Cookies.Append( "Auth-Cookies", token );
-            return Results.Ok();
+            base.Response.Cookies.Append( "Refresh", refreshToken );
+            return Results.Ok(new AuthResponce (token, refreshToken) );
         }
         [HttpPost( "[action]" )]
         public async Task<IResult> Login( LoginUserRequest request ) {
-            var token = await _userService.Login( request.Email, request.Password );
+            var (token, refreshToken) = await _userService.Login( request.Email, request.Password );
             base.Response.Cookies.Append( "Auth-Cookies", token );
-            return Results.Ok(token);
+            base.Response.Cookies.Append( "Refresh", refreshToken );
+            return Results.Ok( new AuthResponce( token, refreshToken ) );
+        }
+        [HttpPost( "[action]" )]
+        public async Task<IResult> LoginByRefresh( LoginRefreshRequest request ) {
+            var (token, refreshToken) = await _userService.LoginByRefresh( request.accessToken, request.refreshToken);
+            base.Response.Cookies.Append( "Auth-Cookies", token );
+            base.Response.Cookies.Append( "Refresh", refreshToken );
+            return Results.Ok( new AuthResponce( token, refreshToken ) );
         }
         [HttpPut( "[action]" )]
         public async Task<IResult> Update( UpdateUserRequest request ) {

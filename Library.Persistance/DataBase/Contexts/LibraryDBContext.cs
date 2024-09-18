@@ -1,11 +1,9 @@
 ﻿using Library.Application.Auth.Enums;
 using Library.DataAccess.DataBase.Configuration;
 using Library.DataAccess.DataBase.Entities;
-using Library.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System.Text.RegularExpressions;
 
 namespace Library.DataAccess.DataBase.Contexts {
     public class LibraryDBContext: DbContext {
@@ -14,6 +12,7 @@ namespace Library.DataAccess.DataBase.Contexts {
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<AccessGroupEntity> Groups { get; set; }
         public DbSet<PermissionEntity> Permissions { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         private readonly AuthorizationOptions _authorizationOptions;
         public LibraryDBContext( DbContextOptions<LibraryDBContext> options, IOptions<AuthorizationOptions> authOptions ) : base( options ) {
@@ -25,6 +24,9 @@ namespace Library.DataAccess.DataBase.Contexts {
             modelBuilder.Entity<AuthorEntity>().HasMany( x => x.Books ).WithOne( x => x.Author ).HasForeignKey( x => x.AuthorId ).OnDelete( DeleteBehavior.Restrict );
             modelBuilder.Entity<UserEntity>().HasMany( x => x.Books ).WithOne( x => x.User ).HasForeignKey( x => x.ClientId ).OnDelete( DeleteBehavior.Restrict );
             modelBuilder.Entity<UserEntity>().HasIndex( x => x.Email ).IsUnique( true );
+
+            modelBuilder.Entity<RefreshToken>().HasOne<UserEntity>().WithMany().HasForeignKey( x => x.UserId ).OnDelete( DeleteBehavior.Cascade );
+
             AuthDbConfiguration.Configure( modelBuilder, _authorizationOptions );
             SeedUsers( modelBuilder );
             var authors = SeedAuthors( modelBuilder );
@@ -104,15 +106,20 @@ namespace Library.DataAccess.DataBase.Contexts {
                     Email = $"{guid}@test.test",
                     PasswordHash = hasher.HashPassword( null, guid.ToString() ),
                     UserName = $"user{i}",
-                    Groups = new List<AccessGroupEntity>()
-                };
+                    };
                 users.Add( user );
             }
-            users.ForEach( x => x.Groups.Append( new AccessGroupEntity() {
+            var userGroup = new AccessGroupEntity() {
                 Id = (int)AccessGroupEnum.User,
                 Name = AccessGroupEnum.User.ToString(),
-            } ) );
+            };
+            var groupUser = new List<UserAccessGroup>();
+            users.ForEach( u => groupUser.Add( new() {
+            GroupId = userGroup.Id,
+            UserId = u.Id} ) );
+
             modelBuilder.Entity<UserEntity>().HasData( users );
+            modelBuilder.Entity<UserAccessGroup>().HasData( groupUser );
         }
         public static string GenerateISBN13() {
             Random random = new Random();

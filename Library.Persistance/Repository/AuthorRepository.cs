@@ -9,36 +9,37 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Library.DataAccess.Repository {
     public class AuthorRepository: IAuthorRepository {
-        private readonly DbSet<AuthorEntity> _dbset;
+        private readonly DbSet<AuthorEntity> _authors;
+
         private readonly IMapper _mapper;
         public AuthorRepository( LibraryDBContext context, IMapper mapper ) {
-            _dbset = context.Authors;
+            _authors = context.Authors;
             _mapper = mapper;
         }
-
+       
         public async Task AddAuthorAsync( Author author ) {
             var authorEntity = _mapper.Map<AuthorEntity>( author );
-            await _dbset.AddAsync( authorEntity );
+            await _authors.AddAsync( authorEntity );
         }
 
         public async Task UpdateAuthorAsync( Author changedAuthor ) {
             var authorEntity = _mapper.Map<AuthorEntity>( changedAuthor );
-            _dbset.Update( authorEntity );
+            _authors.Update( authorEntity );
 
         }
 
         public async Task DeleteAuthorAsync( Guid authorId ) {
-            var authorToDelete = await _dbset
+            var authorToDelete = await _authors
                 .Include( a => a.Books )
                 .AsNoTracking()
                 .FirstOrDefaultAsync( a => a.Id == authorId )
                 ?? throw new AuthorNotFoundException();
 
-            _dbset.Remove( authorToDelete );
+            _authors.Remove( authorToDelete );
         }
 
         public async Task<IList<Author>> GetAuthorsAsync( int skip, int take ) {
-            var authorEntities = await _dbset
+            var authorEntities = await _authors
                 .AsNoTracking()
                 .Skip( skip )
                 .Take( take )
@@ -47,7 +48,7 @@ namespace Library.DataAccess.Repository {
         }
 
         public async Task<IList<Book>> GetBooksByAuthorAsync( Guid authorId, int skip, int take ) {
-            var bookEntities = await _dbset
+            var bookEntities = await _authors
                .AsNoTracking()
                .Include( a => a.Books )
                .Where( a => a.Id == authorId )
@@ -60,7 +61,7 @@ namespace Library.DataAccess.Repository {
         }
 
         public async Task<Author> GetAuthorAsync( Guid authorId ) {
-            var authorEntity = await _dbset
+            var authorEntity = await _authors
                 .AsNoTracking()
                 .Include( x => x.Books )
                 .FirstOrDefaultAsync( a => a.Id == authorId )

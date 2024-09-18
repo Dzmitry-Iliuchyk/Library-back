@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Application", "Libr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.DataAccess", "Library.Persistance\Library.DataAccess.csproj", "{4500E2C4-44E2-46DD-A0A8-3A9311950518}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Infrastracture", "Library.Infrastracture\Library.Infrastracture.csproj", "{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Infrastracture", "Library.Infrastracture\Library.Infrastracture.csproj", "{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{50E8CACF-171A-4DC2-9B01-1DC9E8B6EB0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Application.Tests", "Library.Application.Tests\Library.Application.Tests.csproj", "{36F24CB0-F804-456D-8DD9-900BFEFFB0E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,9 +43,16 @@ Global
 		{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6F9FCD9-8CB5-4433-A9DD-FAF69ED4B7AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36F24CB0-F804-456D-8DD9-900BFEFFB0E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36F24CB0-F804-456D-8DD9-900BFEFFB0E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36F24CB0-F804-456D-8DD9-900BFEFFB0E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36F24CB0-F804-456D-8DD9-900BFEFFB0E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{36F24CB0-F804-456D-8DD9-900BFEFFB0E0} = {50E8CACF-171A-4DC2-9B01-1DC9E8B6EB0F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {115AF559-63B8-488C-AC0A-A31D56F35058}

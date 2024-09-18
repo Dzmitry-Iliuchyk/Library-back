@@ -11,9 +11,10 @@ namespace Library.Domain.Interfaces {
         Task<IList<User>> GetUsers( int skip, int take );
         Task<IList<Book>> GetBooks(Guid userId, int skip, int take );
         Task<User> Get( Guid id );
-        Task<string> Register( string userName, string email, string password );
-        Task<string> Login( string email, string password );
+        Task<(string, string)> Register( string userName, string email, string password );
+        Task<(string, string)> Login( string email, string password );
         Task Update( Guid userId, string userName, string email ,string password  );
         Task Delete( Guid userId );
+        Task<(string, string)> LoginByRefresh( string accessToken, string refreshToken );
     }
 }

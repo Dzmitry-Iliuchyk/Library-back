@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Library.Application.Auth.Interfaces;
 using Library.Application.Exceptions;
+using Library.Application.Helpers;
 using Library.Application.Interfaces;
 using Library.Domain.Interfaces;
 using Library.Domain.Models;
@@ -21,7 +22,7 @@ namespace Library.Application.Implementations {
             this._tokenService = tokenService;
         }
 
-        public async Task<string> Register( string userName, string email, string password ) {
+        public async Task<(string, string)> Register( string userName, string email, string password ) {
             try {
                 _unit.CreateTransaction();
                 var user = new User( id:Guid.NewGuid(),
@@ -33,9 +34,12 @@ namespace Library.Application.Implementations {
                 await _unit.Save();
                 await _unit.authRepository.AddUserToGroup( user, Auth.Enums.AccessGroupEnum.User );
                 await _unit.Save();
-                _unit.Commit();
                 var token = _tokenService.GenerateToken( user );
-                return token; 
+                var refreshToken = _tokenService.GenerateRefreshToken();
+                await _unit.authRepository.SaveRefreshToken(userId: user.Id, refreshToken);
+                await _unit.Save();
+                _unit.Commit();
+                return (token, refreshToken ); 
             }
             catch (Exception) {
                 _unit.Rollback();
@@ -44,7 +48,7 @@ namespace Library.Application.Implementations {
             
         }
 
-        public async Task<string> Login( string email, string password ) {
+        public async Task<(string, string)> Login( string email, string password ) {
             var user = await _unit.userRepository.GetAsync( email );
 
             var result = _hasher.VerifyHashedPassword( null, user.PasswordHash, password );
@@ -53,7 +57,25 @@ namespace Library.Application.Implementations {
                 throw new InvalidPasswordException("Пароль не подходит!");
             }
             var token = _tokenService.GenerateToken( user );
-            return token;
+            await _unit.authRepository.RemoveOldRefreshTokens( userId: user.Id );
+            await _unit.Save();
+            var refreshToken = _tokenService.GenerateRefreshToken();
+            await _unit.authRepository.SaveRefreshToken( userId: user.Id, refreshToken );
+            await _unit.Save();
+            return (token, refreshToken);
+        }
+
+        public async Task<(string, string)> LoginByRefresh( string accessToken, string refreshToken ) {
+            var userId = _tokenService.GetUserIdFromExpiredToken(accessToken);
+            var user = await _unit.userRepository.GetAsync( userId );
+            var refreshTokeninDb = await _unit.authRepository.GetActiveRefreshToken(userId);
+            if (refreshTokeninDb!=refreshToken)
+            {
+                throw new InvalidTokenException("Неверный токен!");
+            }
+            var token = _tokenService.GenerateToken( user );
+
+            return (token, refreshToken);
         }
 
         public async Task Delete( Guid userId ) {
@@ -76,16 +98,16 @@ namespace Library.Application.Implementations {
         public async Task Update( Guid userId, string userName, string email, string password ) {
             try {
                 _unit.CreateTransaction();
-                var passwordHash = _hasher.HashPassword( null, password );
                 var userInDb = await _unit.userRepository.GetAsync( userId );
-                var passwordResult = _hasher.VerifyHashedPassword( null, userInDb.PasswordHash, passwordHash );
-                if (passwordResult.HasFlag( PasswordVerificationResult.Failed )) {
-                    throw new AccessDeniedException( "Пароль не верный!" );
+                var result = _hasher.VerifyHashedPassword( null, userInDb.PasswordHash, password );
+
+                if (result == PasswordVerificationResult.Failed) {
+                    throw new InvalidPasswordException( "Пароль не подходит!" );
                 }
                 var user = new User(id: userId,
                     userName: userName,
                     email: email,
-                    passwordHash: passwordHash );
+                    passwordHash: userInDb.PasswordHash );
                 _validator.ValidateAndThrow( user );
                 await _unit.userRepository.UpdateUser( user );
                 await _unit.Save();
@@ -96,5 +118,6 @@ namespace Library.Application.Implementations {
                 throw;
             }
         }
+
     }
 }

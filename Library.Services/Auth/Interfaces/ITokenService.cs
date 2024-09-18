@@ -10,6 +10,6 @@ namespace Library.Application.Auth.Interfaces {
     public interface ITokenService {
         string GenerateRefreshToken();
         string GenerateToken( User user );
-        ClaimsPrincipal GetPrincipalFromExpiredToken( string token );
+        Guid GetUserIdFromExpiredToken( string token );
     }
 }

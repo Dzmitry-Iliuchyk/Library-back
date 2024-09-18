@@ -62,6 +62,8 @@ builder.Services.AddAuthentication( JwtBearerDefaults.AuthenticationScheme )
                         ValidateIssuer = false,
                         ValidateAudience = false,
                         ValidateLifetime = true,
+                        RequireExpirationTime = true,
+                        ClockSkew = TimeSpan.Zero,
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey( Encoding.UTF8.GetBytes(
                            jwtOptions.GetValue<string>( nameof( JwtOptions.Secret ) ) ) )
@@ -77,7 +79,7 @@ builder.Services.AddAuthentication( JwtBearerDefaults.AuthenticationScheme )
 builder.Services.AddAuthorization( opt => {
     opt.AddPolicy( CustomPolicyNames.CanRead, p => p.AddRequirements( new PermissionRequirement( [ PermissionEnum.Read ] ) ) );
     opt.AddPolicy( CustomPolicyNames.Admin, p => p.AddRequirements( new GroupRequirement( [ AccessGroupEnum.Admin ] ) ) );
-   } );
+} );
 builder.Services.AddTransient<ExceptionMiddleware>();
 
 builder.Services.AddAutoMapper( typeof( DataBaseMapping ) );

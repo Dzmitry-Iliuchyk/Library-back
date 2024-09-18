@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.WebAPI.Controllers {
+    [Authorize]
     [Authorize( Policy = CustomPolicyNames.Admin )]
     [Route( "api/[controller]" )]
     [ApiController]

@@ -48,7 +48,7 @@ namespace Library.Infrastracture.Jwt
                 return Convert.ToBase64String(randomNumber);
             }
         }
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        public Guid GetUserIdFromExpiredToken(string token)
         {
             var tokenValidationParameters = new TokenValidationParameters()
             {
@@ -64,7 +64,8 @@ namespace Library.Infrastracture.Jwt
             var jwtSecurityToken = securityToken as JwtSecurityToken;
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid token");
-            return principal;
+            return Guid.Parse(principal.FindFirst(CustumClaimTypes.UserId).Value);
         }
+
     }
 }

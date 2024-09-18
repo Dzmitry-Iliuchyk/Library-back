@@ -50,6 +50,7 @@ namespace Library.DataAccess.Repository {
         public async Task Save() {
             try {
                 await _context.SaveChangesAsync();
+                _context.ChangeTracker.Clear();
             }
             catch (DbUpdateException ex) {
 

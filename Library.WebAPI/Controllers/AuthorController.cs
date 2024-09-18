@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Library.WebAPI.Controllers {
     [Authorize]
-    [Authorize( Policy = CustomPolicyNames.Admin )]
+    
     [Route( "api/[controller]" )]
     [ApiController]
     public class AuthorController: ControllerBase {
@@ -15,6 +15,8 @@ namespace Library.WebAPI.Controllers {
             _authorService = authorService;
            
         }
+        [Authorize( Policy = CustomPolicyNames.Admin )]
+        [Authorize( Policy = CustomPolicyNames.User )]
         [Authorize( Policy = CustomPolicyNames.CanRead )]
         [HttpGet( "[action]" )]
         public async Task<IResult> GetAuthors( int skip, int take ) {

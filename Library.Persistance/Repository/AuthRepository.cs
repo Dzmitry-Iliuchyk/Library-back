@@ -24,17 +24,15 @@ namespace Library.DataAccess.Repository {
         public async Task RemoveRefreshToken( string refreshToken ) {
             
             var tokenRecord = await _token
-                .AsNoTracking()
                 .FirstOrDefaultAsync( rt => rt.Token == refreshToken );
             
             if (tokenRecord != null) {
                 _token.Remove( tokenRecord );
             }
         }
-        public async Task RemoveOldRefreshTokens( Guid userId) {
+        public async Task RemoveAllRefreshTokens( Guid userId) {
             
             var tokenRecords = await _token
-                .AsNoTracking()
                 .Where( rt => rt.UserId == userId)
                 .ToListAsync();
             
@@ -45,11 +43,10 @@ namespace Library.DataAccess.Repository {
         public async Task<string?> GetActiveRefreshToken( Guid userId ) {
 
             var token = await _token.AsNoTracking().FirstOrDefaultAsync( t => t.UserId == userId);
-            if (token.ExpiryDate< DateTime.Now) {
-                _token.Remove( token );
-                return null;
+            if (token?.ExpiryDate> DateTime.UtcNow) { 
+                 return token?.Token;
             }
-            return token?.Token;
+           return null;
         }
         public async Task SaveRefreshToken( Guid userId, string token ) {
 
@@ -61,29 +58,34 @@ namespace Library.DataAccess.Repository {
             };
             await _token.AddAsync( refreshToken );
         }
-        public async Task AddUserToGroup( User user, AccessGroupEnum group ) {
+        public async Task AddUserToGroup( Guid userId, AccessGroupEnum group ) {
             var searchedGroup = await _groups
-                .AsNoTracking()
                 .FirstOrDefaultAsync( r => r.Name == group.ToString() )
                 ?? throw new GroupNotFountException();
-
-            var userEntity = MapUserToUserEntity( user );
+            var userEntity = await _users
+               .FirstOrDefaultAsync( u => u.Id == userId );
             userEntity.Groups.Add( searchedGroup );
             _users.Update( userEntity );
         }
 
-        public async Task RemoveUserFromGroup( User user, AccessGroupEnum group ) {
+        public async Task RemoveUserFromGroup( Guid userId, AccessGroupEnum group ) {
             var searchedGroup = await _groups
-                .AsNoTracking()
+                .Include(u=>u.Users)
                 .FirstOrDefaultAsync( r => r.Name == group.ToString() )
                 ?? throw new GroupNotFountException();
-            var userEntity = MapUserToUserEntity( user );
-            userEntity.Groups.Remove( searchedGroup );
-            _users.Update( userEntity );
+            var userEntity = await _users
+                .Include(u=>u.Groups)
+                .FirstOrDefaultAsync( u => u.Id == userId );
+
+            if (userEntity.Groups.Contains( searchedGroup )) {
+                userEntity.Groups.Remove( searchedGroup );
+                _users.Update( userEntity );
+            }
         }
         public Task<HashSet<AccessGroupEnum>> GetUserGroups( Guid userId ) {
             var groups = _users
                 .AsNoTracking()
+                .Where(u=>u.Id == userId)
                 .Include( g => g.Groups )
                 .SelectMany( x => x.Groups )
                 .Select( x => (AccessGroupEnum)x.Id )
@@ -106,15 +108,5 @@ namespace Library.DataAccess.Repository {
                 .ToHashSet();
             return Task.FromResult( permissions );
         }
-
-        private UserEntity MapUserToUserEntity( User user ) {
-            UserEntity userEntity;
-            if (_users.Local.Any( e => e.Id == user.Id )) {
-                userEntity = _users.Local.First( u => u.Id == user.Id );
-            } else
-                userEntity = _mapper.Map<UserEntity>( user );
-            return userEntity;
-        }
-
     }
 }

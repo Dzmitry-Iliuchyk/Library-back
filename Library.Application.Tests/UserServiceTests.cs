@@ -38,7 +38,7 @@ namespace Library.Application.Tests {
             var user = new User( Guid.NewGuid(), userName, email, hashedPassword );
 
             _mockUnitOfWork.Setup( u => u.userRepository.CreateUserAsync( user ) ).Returns( Task.CompletedTask );
-            _mockUnitOfWork.Setup( u => u.authRepository.AddUserToGroup( user, Auth.Enums.AccessGroupEnum.User ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.authRepository.AddUserToGroup( user.Id, Auth.Enums.AccessGroupEnum.User ) ).Returns( Task.CompletedTask );
             _mockUnitOfWork.Setup( u => u.authRepository.SaveRefreshToken( user.Id, It.IsAny<string>() ) ).Returns( Task.CompletedTask );
             _mockTokenService.Setup( t => t.GenerateToken( It.IsAny<User>() ) ).Returns( token );
             _mockTokenService.Setup( t => t.GenerateRefreshToken() ).Returns( refreshToken );
@@ -52,7 +52,7 @@ namespace Library.Application.Tests {
             _mockUnitOfWork.Verify( u => u.CreateTransaction(), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Exactly( 3 ) );
             _mockUnitOfWork.Verify( u => u.userRepository.CreateUserAsync( It.IsAny<User>() ), Times.Exactly( 1 ) );
-            _mockUnitOfWork.Verify( u => u.authRepository.AddUserToGroup( It.IsAny<User>(), It.IsAny<AccessGroupEnum>() ), Times.Once() );
+            _mockUnitOfWork.Verify( u => u.authRepository.AddUserToGroup( It.IsAny<Guid>(), It.IsAny<AccessGroupEnum>() ), Times.Once() );
             _mockUnitOfWork.Verify( u => u.authRepository.SaveRefreshToken( It.IsAny<Guid>(), It.IsAny<string>() ), Times.Once() );
             _mockUnitOfWork.Verify( u => u.Commit(), Times.Once );
         }
@@ -76,7 +76,7 @@ namespace Library.Application.Tests {
             var hashedPassword = _hasher.HashPassword( null, password );
             var user = new User( Guid.NewGuid(), "testUser", hashedPassword, email );
             _mockUnitOfWork.Setup( u => u.userRepository.GetAsync( email ) ).ReturnsAsync( user );
-            _mockUnitOfWork.Setup( u => u.authRepository.RemoveOldRefreshTokens( user.Id ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.authRepository.RemoveAllRefreshTokens( user.Id ) ).Returns( Task.CompletedTask );
             _mockUnitOfWork.Setup( u => u.authRepository.SaveRefreshToken( user.Id, It.IsAny<string>() ) ).Returns( Task.CompletedTask );
 
             _mockTokenService.Setup( t => t.GenerateToken( It.IsAny<User>() ) ).Returns( "token" );
@@ -90,7 +90,7 @@ namespace Library.Application.Tests {
             Assert.That( result.Item2, Is.EqualTo( "refreshToken" ) );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Exactly( 2 ) );
             _mockUnitOfWork.Verify( u => u.authRepository.SaveRefreshToken( It.IsAny<Guid>(), It.IsAny<string>() ), Times.Once() );
-            _mockUnitOfWork.Verify( u => u.authRepository.RemoveOldRefreshTokens( It.IsAny<Guid>() ), Times.Once() );
+            _mockUnitOfWork.Verify( u => u.authRepository.RemoveAllRefreshTokens( It.IsAny<Guid>() ), Times.Once() );
         }
 
         [Test]

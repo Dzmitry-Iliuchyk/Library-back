@@ -23,7 +23,6 @@ namespace Library.DataAccess.Repository {
 
         public async Task DeleteBookAsync( Guid bookId ) {
             var bookToDelete = await _dbSet
-                .AsNoTracking()
                 .FirstOrDefaultAsync( x => x.Id == bookId )
                 ?? throw new BookNotFoundException();
             _dbSet.Remove( bookToDelete );

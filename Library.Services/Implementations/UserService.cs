@@ -32,7 +32,7 @@ namespace Library.Application.Implementations {
                 _validator.ValidateAndThrow( user );
                 await _unit.userRepository.CreateUserAsync( user );
                 await _unit.Save();
-                await _unit.authRepository.AddUserToGroup( user, Auth.Enums.AccessGroupEnum.User );
+                await _unit.authRepository.AddUserToGroup( user.Id, Auth.Enums.AccessGroupEnum.User );
                 await _unit.Save();
                 var token = _tokenService.GenerateToken( user );
                 var refreshToken = _tokenService.GenerateRefreshToken();
@@ -57,7 +57,7 @@ namespace Library.Application.Implementations {
                 throw new InvalidPasswordException("Пароль не подходит!");
             }
             var token = _tokenService.GenerateToken( user );
-            await _unit.authRepository.RemoveOldRefreshTokens( userId: user.Id );
+            await _unit.authRepository.RemoveAllRefreshTokens( userId: user.Id );
             await _unit.Save();
             var refreshToken = _tokenService.GenerateRefreshToken();
             await _unit.authRepository.SaveRefreshToken( userId: user.Id, refreshToken );

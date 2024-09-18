@@ -16,22 +16,22 @@ namespace Library.DataAccess.Repository {
             _authors = context.Authors;
             _mapper = mapper;
         }
-       
+
         public async Task AddAuthorAsync( Author author ) {
             var authorEntity = _mapper.Map<AuthorEntity>( author );
             await _authors.AddAsync( authorEntity );
         }
 
-        public async Task UpdateAuthorAsync( Author changedAuthor ) {
+        public Task UpdateAuthorAsync( Author changedAuthor ) {
             var authorEntity = _mapper.Map<AuthorEntity>( changedAuthor );
             _authors.Update( authorEntity );
 
+            return Task.CompletedTask;
         }
 
         public async Task DeleteAuthorAsync( Guid authorId ) {
             var authorToDelete = await _authors
                 .Include( a => a.Books )
-                .AsNoTracking()
                 .FirstOrDefaultAsync( a => a.Id == authorId )
                 ?? throw new AuthorNotFoundException();
 

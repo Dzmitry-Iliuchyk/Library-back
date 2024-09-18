@@ -34,7 +34,6 @@ namespace Library.DataAccess.Repository {
 
         public async Task DeleteUserAsync( Guid userId ) {
             var userToDelete = await _dbSet
-                .AsNoTracking()
                 .FirstOrDefaultAsync()
                 ?? throw new UserNotFoundException();
             _dbSet.Remove( userToDelete );

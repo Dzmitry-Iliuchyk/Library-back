@@ -79,6 +79,7 @@ builder.Services.AddAuthentication( JwtBearerDefaults.AuthenticationScheme )
 builder.Services.AddAuthorization( opt => {
     opt.AddPolicy( CustomPolicyNames.CanRead, p => p.AddRequirements( new PermissionRequirement( [ PermissionEnum.Read ] ) ) );
     opt.AddPolicy( CustomPolicyNames.Admin, p => p.AddRequirements( new GroupRequirement( [ AccessGroupEnum.Admin ] ) ) );
+    opt.AddPolicy( CustomPolicyNames.User, p => p.AddRequirements( new GroupRequirement( [ AccessGroupEnum.User ] ) ) );
 } );
 builder.Services.AddTransient<ExceptionMiddleware>();
 

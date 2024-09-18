@@ -83,6 +83,7 @@ namespace Library.Application.Implementations {
         }
         public async Task GiveBookToClientAsync( Guid bookId, Guid clientId, int hoursToUse ) {
             try {
+                _unit.CreateTransaction();
                 var book = await _unit.bookRepository.GetBookAsync( bookId );
                 var freeBook = book.Take( clientId, TimeSpan.FromHours( hoursToUse ) );
                 _validator.ValidateAndThrow( freeBook );

@@ -14,6 +14,7 @@ namespace Library.Application.Implementations {
         public async Task<string> SaveImage( Stream imageStream, Guid bookId ) {
             try {
                 var path = GetImagePath( bookId );
+                Directory.CreateDirectory( path: Path.GetDirectoryName( path ) );
 
                 using var image = await SixLabors.ImageSharp.Image.LoadAsync( imageStream );
                 

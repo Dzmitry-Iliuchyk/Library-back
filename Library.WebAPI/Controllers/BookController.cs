@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library.WebAPI.Controllers {
-    [Authorize( Policy = CustomPolicyNames.Admin )]
+
     [Route( "api/[controller]" )]
     [ApiController]
     public class BookController: ControllerBase {
@@ -22,6 +22,12 @@ namespace Library.WebAPI.Controllers {
             var books = await _bookService.GetBooksAsync( skip, take );
             return Results.Ok( books );
         }
+        //[AllowAnonymous]
+        //[HttpGet( "[action]" )]
+        //public async Task<IResult> GetFilteredBooks( BooksRequest request ) {
+        //    var books = await _bookService.GetBooksAsync( skip, take );
+        //    return Results.Ok( books );
+        //}
         [Authorize( Policy = CustomPolicyNames.CanRead )]
         [HttpGet( "{ISBN}/[action]" )]
         public async Task<IResult> GetByISBN( [FromRoute] string ISBN ) {

@@ -13,6 +13,7 @@ namespace Library.DataAccess.AutoMapper {
             CreateMap<BookEntity, Book>()
        .ConvertUsing<BookEntityToBookConverter>();
             CreateMap<Book, BookEntity>()
+               //.ForMember( dest => dest.Author, opt => opt.MapFrom( src => src.Author ) )
                .ForMember( dest => dest.BookType, opt => opt.MapFrom( src => src is FreeBook ? BookType.Free : BookType.Taken ) )
                .ForMember( dest => dest.ClientId, opt => opt.MapFrom( src => src is TakenBook ? (Guid?)( src as TakenBook ).ClientId : null ) )
                .ForMember( dest => dest.TakenAt, opt => opt.MapFrom( src => src is TakenBook ? (DateTime?)( src as TakenBook ).TakenAt : null ) )

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Library.Application.Auth.Enums;
 using Library.Application.Auth.Interfaces;
 using Library.Application.Exceptions;
 using Library.Application.Helpers;
@@ -39,7 +40,7 @@ namespace Library.Application.Implementations {
                 await _unit.authRepository.SaveRefreshToken(userId: user.Id, refreshToken);
                 await _unit.Save();
                 _unit.Commit();
-                return (token, refreshToken ); 
+                return (token, refreshToken); 
             }
             catch (Exception) {
                 _unit.Rollback();
@@ -87,12 +88,16 @@ namespace Library.Application.Implementations {
             return await _unit.userRepository.GetUsersAsync( skip, take );
         }
 
-        public async Task<IList<Book>> GetBooks( Guid userId, int skip, int take ) {
+        public async Task<IList<TakenBook>> GetBooks( Guid userId, int skip, int take ) {
             return await _unit.userRepository.GetBooksAsync( userId, skip, take );
         }
 
         public async Task<User> Get( Guid id ) {
             return await _unit.userRepository.GetAsync( id );
+        }
+        public async Task<List<string>> GetGroups( Guid id ) {
+            var groups =  await _unit.authRepository.GetUserGroups( id );
+            return groups.Select(x=> x.ToString()).ToList();
         }
 
         public async Task Update( Guid userId, string userName, string email, string password ) {

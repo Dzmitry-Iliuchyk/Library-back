@@ -49,7 +49,7 @@ namespace Library.DataAccess.Repository {
             return _mapper.Map<IList<User>>( userEntities );
         }
 
-        public async Task<IList<Book>> GetBooksAsync( Guid userId, int skip, int take ) {
+        public async Task<IList<TakenBook>> GetBooksAsync( Guid userId, int skip, int take ) {
             var bookEntities = await _dbSet
                 .AsNoTracking()
                 .Include(x=>x.Books)
@@ -57,13 +57,12 @@ namespace Library.DataAccess.Repository {
                 .Skip( skip )
                 .Take( take )
                 .ToListAsync();
-            return _mapper.Map<IList<Book>>( bookEntities );
+            return _mapper.Map<IList<TakenBook>>( bookEntities );
         }
 
         public async Task<User> GetAsync( Guid id ) {
             var userEntity= await _dbSet
                 .AsNoTracking()
-                .Include( x => x.Books )
                 .FirstOrDefaultAsync(x=>x.Id == id)
                 ?? throw new UserNotFoundException();
             
@@ -72,7 +71,6 @@ namespace Library.DataAccess.Repository {
         public async Task<User> GetAsync( string email ) {
             var userEntity= await _dbSet
                 .AsNoTracking()
-                .Include( x => x.Books )
                 .FirstOrDefaultAsync(x=>x.Email == email)
                 ?? throw new UserNotFoundException();
 

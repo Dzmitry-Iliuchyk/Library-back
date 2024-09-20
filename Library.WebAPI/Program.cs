@@ -82,7 +82,19 @@ builder.Services.AddAuthorization( opt => {
     opt.AddPolicy( CustomPolicyNames.User, p => p.AddRequirements( new GroupRequirement( [ AccessGroupEnum.User ] ) ) );
 } );
 builder.Services.AddTransient<ExceptionMiddleware>();
+builder.Services.AddCors( options => {
+    options.AddPolicy( "AllowAngularOrigins",
+    builder => {
+        builder.WithOrigins( "http://localhost:4200" )
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
 
+    } );
+    options.AddPolicy( "AllowAll",
+            builder => builder.AllowAnyOrigin()
+                              .AllowAnyHeader()
+                              .AllowAnyMethod());
+} );
 builder.Services.AddAutoMapper( typeof( DataBaseMapping ) );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -95,6 +107,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors( "AllowAll" );
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 

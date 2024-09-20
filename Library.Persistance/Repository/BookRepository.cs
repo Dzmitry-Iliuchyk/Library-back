@@ -38,6 +38,21 @@ namespace Library.DataAccess.Repository {
 
             return _mapper.Map<IList<Book>>( bookEntities );
         }
+        public async Task<IList<Book>> GetFilteredBooksAsync(int skip, int take, string authorFilter, string titleFilter) {
+            var bookEntities = await _dbSet
+                .AsNoTracking()
+                .Include(b=>b.Author)
+                 .Where( b => ( string.IsNullOrEmpty( titleFilter )
+                 || b.Title.Contains( titleFilter ))
+                 && ( string.IsNullOrEmpty( titleFilter )
+                 || ( b.Author.FirstName.Contains( authorFilter )
+                 || b.Author.LastName.Contains( authorFilter ))) ) 
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            return _mapper.Map<IList<Book>>( bookEntities );
+        }
 
         public async Task<Book> GetBookAsync( Guid bookId ) {
             var bookEntity = await _dbSet

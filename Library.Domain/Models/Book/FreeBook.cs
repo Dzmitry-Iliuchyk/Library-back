@@ -2,10 +2,10 @@
 
 namespace Library.Domain.Models.Book {
     public class FreeBook: Book {
-        public FreeBook( Guid id, string title, string genre, string description, string ISBN, Guid authorId )
-            : base(id, title, genre, description, ISBN, authorId) {
+        public FreeBook( Guid id, string title, string genre, string description, string ISBN, Guid authorId, Author? author = null )
+            : base(id, title, genre, description, ISBN, authorId, author ) {
         }
-        public FreeBook( Book book ) : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.AuthorId ) {
+        public FreeBook( Book book ) : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.AuthorId, book.Author) {
         }
 
         public override TakenBook Take( Guid clientId, TimeSpan periodOfUse ) {

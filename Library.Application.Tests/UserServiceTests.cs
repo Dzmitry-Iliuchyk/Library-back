@@ -181,9 +181,16 @@ namespace Library.Application.Tests {
         public async Task GetBooks_ShouldReturnListOfBooks() {
             // Arrange
             var userId = Guid.NewGuid();
-            var books = new List<Book> { new FreeBook(Guid.NewGuid(), "Harry Potter and the Prisoner of Azkaban", "fantasy",
-                "During the summer, Harry accidentally performs magic at the home of his Aunt Petunia and Uncle Vernon. After this incident, he leaves their house and spends the summer in London. While staying at the Leaky Cauldron inn, Harry is visited by Minister for Magic Cornelius Fudge, who warns him about Sirius Black, a mass-murderer who escaped from the wizard prison Azkaban.",
-                ISBN:   "0747542155", Guid.NewGuid() )};
+            var books = new List<TakenBook> { new TakenBook(id: Guid.NewGuid(),
+                title: "Harry Potter and the Prisoner of Azkaban",
+                genre: "fantasy",
+                description: "During the summer, Harry accidentally performs magic at the home of his Aunt Petunia and Uncle Vernon. After this incident, he leaves their house and spends the summer in London. While staying at the Leaky Cauldron inn, Harry is visited by Minister for Magic Cornelius Fudge, who warns him about Sirius Black, a mass-murderer who escaped from the wizard prison Azkaban.",
+                ISBN:   "0747542155",
+                authorId: Guid.NewGuid(),
+                client_id: userId,
+                takenAt: DateTime.UtcNow,
+                returnTo: DateTime.UtcNow.AddDays( 1 )
+                )};
             _mockUnitOfWork.Setup( u => u.userRepository.GetBooksAsync( userId, It.IsAny<int>(), It.IsAny<int>() ) ).ReturnsAsync( books );
 
             // Act

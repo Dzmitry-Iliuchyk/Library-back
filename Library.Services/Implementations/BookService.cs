@@ -85,9 +85,9 @@ namespace Library.Application.Implementations {
             try {
                 _unit.CreateTransaction();
                 var book = await _unit.bookRepository.GetBookAsync( bookId );
-                var freeBook = book.Take( clientId, TimeSpan.FromHours( hoursToUse ) );
-                _validator.ValidateAndThrow( freeBook );
-                await _unit.bookRepository.UpdateBook( freeBook );
+                var takenBook = book.Take( clientId, TimeSpan.FromHours( hoursToUse ) );
+                _validator.ValidateAndThrow( takenBook );
+                await _unit.bookRepository.UpdateBook( takenBook );
                 await _unit.Save();
                 _unit.Commit();
             }
@@ -100,6 +100,9 @@ namespace Library.Application.Implementations {
 
         public async Task<IList<Book>> GetBooksAsync( int skip, int take ) {
             return await _unit.bookRepository.GetBooksAsync( skip, take );
+        }
+        public async Task<(IList<Book>, int)> GetFilteredBooksAsync( int skip, int take, string? authorFilter, string? titleFilter ) {
+            return await _unit.bookRepository.GetFilteredBooksAsync(  skip,  take,  authorFilter,  titleFilter );
         }
 
         public async Task<Book> GetBookAsync( Guid bookId ) {

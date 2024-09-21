@@ -12,6 +12,7 @@ namespace Library.DataAccess.Repository {
         private readonly IMapper _mapper;
         public BookRepository( LibraryDBContext dbContext, IMapper mapper ) {
             this._dbSet = dbContext.Books;
+           
             this._mapper = mapper;
         }
 
@@ -38,20 +39,25 @@ namespace Library.DataAccess.Repository {
 
             return _mapper.Map<IList<Book>>( bookEntities );
         }
-        public async Task<IList<Book>> GetFilteredBooksAsync(int skip, int take, string authorFilter, string titleFilter) {
-            var bookEntities = await _dbSet
+        public async Task<(IList<Book>,int)> GetFilteredBooksAsync(int skip, int take, string? authorFilter, string? titleFilter) {
+            var bookQuery =  _dbSet
+                .AsQueryable()
                 .AsNoTracking()
-                .Include(b=>b.Author)
+                .Include( b => b.Author )
                  .Where( b => ( string.IsNullOrEmpty( titleFilter )
-                 || b.Title.Contains( titleFilter ))
-                 && ( string.IsNullOrEmpty( titleFilter )
+                 || b.Title.Contains( titleFilter ) )
+                 && ( string.IsNullOrEmpty( authorFilter )
                  || ( b.Author.FirstName.Contains( authorFilter )
-                 || b.Author.LastName.Contains( authorFilter ))) ) 
-                .Skip(skip)
-                .Take(take)
+                 || b.Author.LastName.Contains( authorFilter ) ) ) );
+
+            var bookCount = await bookQuery.CountAsync();
+
+            var bookEntities = await bookQuery
+                .Skip( skip )
+                .Take( take )
                 .ToListAsync();
 
-            return _mapper.Map<IList<Book>>( bookEntities );
+            return (_mapper.Map<IList<Book>>( bookEntities ), bookCount);
         }
 
         public async Task<Book> GetBookAsync( Guid bookId ) {

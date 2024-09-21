@@ -14,12 +14,15 @@ using Library.Domain.Models.Book;
 using Library.Infrastracture;
 using Library.Infrastracture.Auth;
 using Library.Infrastracture.Jwt;
+using Library.WebAPI.Mapper;
 using Library.WebAPI.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.Text;
 using AuthorizationOptions = Library.DataAccess.DataBase.Configuration.AuthorizationOptions;
 
@@ -29,7 +32,11 @@ var jwtOptions = configuration.GetRequiredSection( nameof( JwtOptions ) );
 var authOptions = configuration.GetRequiredSection( nameof( AuthorizationOptions ) );
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson( options => {
+    options.SerializerSettings.Converters.Add( new StringEnumConverter() );
+    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+} );
 
 builder.Services.Configure<ImageOptions>( configuration.GetSection( nameof( ImageOptions ) ) );
 builder.Services.Configure<JwtOptions>( jwtOptions );
@@ -87,15 +94,15 @@ builder.Services.AddCors( options => {
     builder => {
         builder.WithOrigins( "http://localhost:4200" )
                             .AllowAnyHeader()
-                            .AllowAnyMethod();
-
+                            .AllowAnyMethod()
+                            .AllowCredentials();
     } );
     options.AddPolicy( "AllowAll",
             builder => builder.AllowAnyOrigin()
                               .AllowAnyHeader()
                               .AllowAnyMethod());
 } );
-builder.Services.AddAutoMapper( typeof( DataBaseMapping ) );
+builder.Services.AddAutoMapper( typeof( DataBaseMappings ), typeof(BookResponceProfile) );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -107,7 +114,7 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors( "AllowAll" );
+app.UseCors( "AllowAngularOrigins" );
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 

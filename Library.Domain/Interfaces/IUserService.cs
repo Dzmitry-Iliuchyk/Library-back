@@ -17,5 +17,6 @@ namespace Library.Domain.Interfaces {
         Task Delete( Guid userId );
         Task<(string, string)> LoginByRefresh( string accessToken, string refreshToken );
         Task<List<string>> GetGroups( Guid id );
+        Task<(IList<TakenBook>, int)> GetFilteredBooksAsync( int skip, int take, string? authorFilter, string? titleFilter, Guid userId );
     }
 }

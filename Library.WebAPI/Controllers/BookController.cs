@@ -1,4 +1,5 @@
-﻿using Library.Domain.Interfaces;
+﻿using AutoMapper;
+using Library.Domain.Interfaces;
 using Library.Infrastracture;
 using Library.WebAPI.Contracts.Book;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,12 @@ namespace Library.WebAPI.Controllers {
     public class BookController: ControllerBase {
         private readonly IBookService _bookService;
         private readonly IImageService _imageService;
+        private readonly IMapper _mapper;
 
-        public BookController( IBookService bookService, IImageService imageService ) {
+        public BookController( IBookService bookService, IImageService imageService, IMapper mapper ) {
             this._bookService = bookService;
             this._imageService = imageService;
+            _mapper = mapper;
         }
         [AllowAnonymous]
         [HttpGet( "[action]" )]
@@ -22,12 +25,20 @@ namespace Library.WebAPI.Controllers {
             var books = await _bookService.GetBooksAsync( skip, take );
             return Results.Ok( books );
         }
-        //[AllowAnonymous]
-        //[HttpGet( "[action]" )]
-        //public async Task<IResult> GetFilteredBooks( BooksRequest request ) {
-        //    var books = await _bookService.GetBooksAsync( skip, take );
-        //    return Results.Ok( books );
-        //}
+        [AllowAnonymous]
+        [HttpPost( "[action]" )]
+        public async Task<IResult> GetFilteredBooks( BooksRequest request ) {
+            var (books, booksCount) = await _bookService.GetFilteredBooksAsync( request.skip, request.take, request.authorFilter, request.titleFilter );
+            IList<BooksResponce> booksResponces = _mapper.Map<IList<BooksResponce>>( books );
+            foreach (var item in booksResponces) {
+                item.Image = await _imageService.GetImageAsBase64( item.Id );
+            }
+            BooksResponseWithCount response = new BooksResponseWithCount() {
+                Books = booksResponces,
+                Count = booksCount
+            };
+            return Results.Ok( response );
+        }
         [Authorize( Policy = CustomPolicyNames.CanRead )]
         [HttpGet( "{ISBN}/[action]" )]
         public async Task<IResult> GetByISBN( [FromRoute] string ISBN ) {
@@ -52,8 +63,8 @@ namespace Library.WebAPI.Controllers {
         }
         [Authorize]
         [HttpPost( "[action]" )]
-        public async Task<IResult> Free( Guid bookId) {
-            var userId = Guid.Parse(HttpContext.User.Claims.First(u=>u.Type == CustumClaimTypes.UserId).Value);
+        public async Task<IResult> Free( Guid bookId ) {
+            var userId = Guid.Parse( HttpContext.User.Claims.First( u => u.Type == CustumClaimTypes.UserId ).Value );
             await _bookService.FreeBookAsync( bookId, userId );
             return Results.Ok();
         }
@@ -85,7 +96,7 @@ namespace Library.WebAPI.Controllers {
         [HttpGet( "[action]" )]
         public async Task<IResult> ThrowException( Guid bookId ) {
 
-            throw new Exception("sfdsfssfsfd");
+            throw new Exception( "sfdsfssfsfd" );
         }
     }
 }

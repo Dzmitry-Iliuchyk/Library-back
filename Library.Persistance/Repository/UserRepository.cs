@@ -59,6 +59,29 @@ namespace Library.DataAccess.Repository {
                 .ToListAsync();
             return _mapper.Map<IList<TakenBook>>( bookEntities );
         }
+        public async Task<(IList<TakenBook>, int)> GetFilteredBooksAsync( int skip, int take, string? authorFilter, string? titleFilter, Guid userId ) {
+            var booksQuery = _dbSet
+                .AsQueryable()
+                .AsNoTracking()
+                .Where( u => u.Id == userId )
+                .Include( b => b.Books.Where( b =>
+                ( string.IsNullOrEmpty( titleFilter )
+                 || b.Title.Contains( titleFilter ) )
+                 && ( string.IsNullOrEmpty( authorFilter )
+                 || ( b.Author.FirstName.Contains( authorFilter )
+                 || b.Author.LastName.Contains( authorFilter ) ) ) ) )
+                .ThenInclude( b => b.Author )
+                .SelectMany( x => x.Books );
+
+            var bookCount = await booksQuery.CountAsync();
+
+            var bookEntities = await booksQuery
+                .Skip( skip )
+                .Take( take )
+                .ToListAsync();
+
+            return (_mapper.Map<IList<TakenBook>>( bookEntities ), bookCount);
+        }
 
         public async Task<User> GetAsync( Guid id ) {
             var userEntity= await _dbSet

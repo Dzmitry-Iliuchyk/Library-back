@@ -2,7 +2,7 @@
 
 namespace Library.WebAPI.Contracts.User {
     public record LoginUserRequest(
-    [Required] string Password,
-    [Required] string Email);
+    string Password,
+    string Email);
 
 }

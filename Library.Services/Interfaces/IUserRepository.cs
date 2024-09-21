@@ -10,5 +10,6 @@ namespace Library.Application.Interfaces {
         Task CreateUserAsync( User user );
         Task UpdateUser( User user );
         Task DeleteUserAsync( Guid userId );
+        Task<(IList<TakenBook>, int)> GetFilteredBooksAsync( int skip, int take, string? authorFilter, string? titleFilter, Guid userId );
     }
 }

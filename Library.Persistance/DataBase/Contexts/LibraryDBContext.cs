@@ -1,4 +1,5 @@
-﻿using Library.Application.Auth.Enums;
+﻿using Bogus;
+using Library.Application.Auth.Enums;
 using Library.DataAccess.DataBase.Configuration;
 using Library.DataAccess.DataBase.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -60,18 +61,20 @@ namespace Library.DataAccess.DataBase.Contexts {
         }
 
         private static void SeedBooks( ModelBuilder modelBuilder, List<AuthorEntity> authors ) {
+            Faker faker;
             List<BookEntity> books = new List<BookEntity>();
             var rand = new Random();
             for (int i = 0; i < 50; i++) {
+                faker = new Faker();
                 var guid = Guid.NewGuid();
                 var user = new BookEntity {
                     Id = guid,
                     AuthorId = authors[ rand.Next( 0, authors.Count() ) ].Id,
                     BookType = Enums.BookType.Free,
-                    Description = guid.ToString(),
+                    Description = faker.Lorem.Sentence(20,50),
                     ISBN = GenerateISBN13(),
-                    Genre = $"{i % 10}",
-                    Title = guid.ToString(),
+                    Genre = faker.Lorem.Word(),
+                    Title = faker.Lorem.Sentence(),
                 };
                 books.Add( user );
             }
@@ -79,16 +82,18 @@ namespace Library.DataAccess.DataBase.Contexts {
         }
 
         private static List<AuthorEntity> SeedAuthors( ModelBuilder modelBuilder ) {
+            Faker faker;
             List<AuthorEntity> authors = new List<AuthorEntity>();
             var rand = new Random();
             for (int i = 0; i < 5; i++) {
+                faker = new Faker();
                 var guid = Guid.NewGuid();
                 var author = new AuthorEntity {
                     Id = guid,
                     Birthday = DateTime.UtcNow.AddYears( -rand.Next( 12, 120 ) ),
-                    Country = "Belarus",
-                    FirstName = $"name{i}",
-                    LastName = $"LastName{i}",
+                    Country = faker.Address.Country(),
+                    FirstName = faker.Person.FirstName,
+                    LastName = faker.Person.LastName,
                 };
                 authors.Add( author );
             }
@@ -97,15 +102,17 @@ namespace Library.DataAccess.DataBase.Contexts {
         }
 
         private static void SeedUsers( ModelBuilder modelBuilder ) {
+            Faker faker;
             List<UserEntity> users = new List<UserEntity>();
             var hasher = new PasswordHasher<UserEntity>();
             for (int i = 0; i < 5; i++) {
+                faker = new Faker();
                 var guid = Guid.NewGuid();
                 var user = new UserEntity {
                     Id = guid,
-                    Email = $"{guid}@test.test",
+                    Email = faker.Person.Email,
                     PasswordHash = hasher.HashPassword( null, guid.ToString() ),
-                    UserName = $"user{i}",
+                    UserName = faker.Person.UserName,
                     };
                 users.Add( user );
             }

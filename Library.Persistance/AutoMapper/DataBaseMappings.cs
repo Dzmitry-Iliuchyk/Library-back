@@ -6,8 +6,8 @@ using Library.Domain.Models.Book;
 using System.Security.AccessControl;
 
 namespace Library.DataAccess.AutoMapper {
-    public class DataBaseMapping: Profile {
-        public DataBaseMapping() {
+    public class DataBaseMappings: Profile {
+        public DataBaseMappings() {
             CreateMap<UserEntity, User>().ReverseMap();
             CreateMap<AuthorEntity, Author>().ReverseMap();
             CreateMap<BookEntity, Book>()

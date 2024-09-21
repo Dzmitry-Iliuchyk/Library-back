@@ -10,5 +10,6 @@ namespace Library.Domain.Interfaces {
         Task<string> SaveImage(Stream imageStream, Guid bookId );
         void DeleteImage(Guid bookId);
         Task<byte[]> GetImage(Guid bookId);
+        Task<string> GetImageAsBase64( Guid bookId );
     }
 }

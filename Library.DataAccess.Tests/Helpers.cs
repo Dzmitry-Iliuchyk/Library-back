@@ -12,7 +12,7 @@ namespace Library.DataAccess.Tests {
 
         public static IMapper ConfigureMapper() {
             var mapperExpression = new MapperConfigurationExpression();
-            mapperExpression.AddProfile( new DataBaseMapping() );
+            mapperExpression.AddProfile( new DataBaseMappings() );
             var config = new MapperConfiguration( mapperExpression );
             return config.CreateMapper();
         }

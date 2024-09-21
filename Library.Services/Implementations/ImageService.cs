@@ -42,6 +42,16 @@ namespace Library.Application.Implementations {
                 return await File.ReadAllBytesAsync( path );
             }
         }
+        public async Task<string> GetImageAsBase64( Guid bookId ) {
+            string path = GetImagePath( bookId );
+            if (File.Exists( path )) {
+                
+                return Convert.ToBase64String(await File.ReadAllBytesAsync( path ));
+            } else {
+                path = GetDefaultImagePath();
+                return Convert.ToBase64String(await File.ReadAllBytesAsync( path ));
+            }
+        }
 
         private string GetImagePath( Guid bookId ) {
             return Path.Combine( Directory.GetCurrentDirectory(), _options.PathToImages, bookId.ToString() + ".png" );

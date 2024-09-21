@@ -87,7 +87,9 @@ namespace Library.Application.Implementations {
         public async Task<IList<User>> GetUsers( int skip, int take ) {
             return await _unit.userRepository.GetUsersAsync( skip, take );
         }
-
+        public async Task<(IList<TakenBook>, int)> GetFilteredBooksAsync( int skip, int take, string? authorFilter, string? titleFilter, Guid userId ) {
+            return await _unit.userRepository.GetFilteredBooksAsync( skip, take, authorFilter, titleFilter, userId );
+        }
         public async Task<IList<TakenBook>> GetBooks( Guid userId, int skip, int take ) {
             return await _unit.userRepository.GetBooksAsync( userId, skip, take );
         }

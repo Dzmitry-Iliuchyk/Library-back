@@ -4,12 +4,12 @@
 
 Далее необходимо выполнить следующие комманды. 
 
-dotnet restore
+`dotnet restore`
 
-dotnet tool install --global dotnet-ef
+`dotnet tool install --global dotnet-ef`
 
-dotnet ef database update --project Library.Persistance\Library.DataAccess.csproj --startup-project Library.WebAPI\Library.WebAPI.csproj
+`dotnet ef database update --project Library.Persistance\Library.DataAccess.csproj --startup-project Library.WebAPI\Library.WebAPI.csproj`
 
-dotnet build
+`dotnet build`
 
-dotnet run --project Library.WebAPI\Library.WebAPI.csproj
+`dotnet run --project Library.WebAPI\Library.WebAPI.csproj`

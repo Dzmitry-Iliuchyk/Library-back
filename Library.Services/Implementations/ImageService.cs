@@ -1,15 +1,17 @@
 ﻿using Library.Application.Exceptions;
 using Library.Application.Helpers;
 using Library.Domain.Interfaces;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp.Processing;
 
 namespace Library.Application.Implementations {
     public class ImageService: IImageService {
         private readonly ImageOptions _options;
-        public ImageService(IOptions<ImageOptions> imageOptions) {
+        private readonly IMemoryCache _cache;
+        public ImageService( IOptions<ImageOptions> imageOptions, IMemoryCache cache ) {
             _options = imageOptions.Value;
+            _cache = cache;
         }
         public async Task<string> SaveImage( Stream imageStream, Guid bookId ) {
             try {
@@ -17,7 +19,7 @@ namespace Library.Application.Implementations {
                 Directory.CreateDirectory( path: Path.GetDirectoryName( path ) );
 
                 using var image = await SixLabors.ImageSharp.Image.LoadAsync( imageStream );
-                
+
                 image.Mutate( x => x.Resize( _options.Width, _options.Height ) );
                 using var outputStream = new FileStream( path, FileMode.Create );
                 await image.SaveAsync( outputStream, new SixLabors.ImageSharp.Formats.Png.PngEncoder() );
@@ -34,6 +36,7 @@ namespace Library.Application.Implementations {
             fileInfo.Delete();
         }
         public async Task<byte[]> GetImage( Guid bookId ) {
+
             string path = GetImagePath( bookId );
             if (File.Exists( path )) {
                 return await File.ReadAllBytesAsync( path );
@@ -43,13 +46,17 @@ namespace Library.Application.Implementations {
             }
         }
         public async Task<string> GetImageAsBase64( Guid bookId ) {
+            if (_cache.TryGetValue( bookId, out string image )) {
+                return image;
+            }
             string path = GetImagePath( bookId );
             if (File.Exists( path )) {
-                
-                return Convert.ToBase64String(await File.ReadAllBytesAsync( path ));
+                _cache.Set( bookId, image, TimeSpan.FromHours( 1 ) );
+                return Convert.ToBase64String( await File.ReadAllBytesAsync( path ) );
             } else {
+                _cache.Set( bookId, image, TimeSpan.FromHours( 1 ) );
                 path = GetDefaultImagePath();
-                return Convert.ToBase64String(await File.ReadAllBytesAsync( path ));
+                return Convert.ToBase64String( await File.ReadAllBytesAsync( path ) );
             }
         }
 

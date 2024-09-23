@@ -8,7 +8,7 @@ using Library.WebAPI.Contracts.Book;
 namespace Library.WebAPI.Mapper {
     public class BookResponceProfile: Profile {
         public BookResponceProfile() {
-            CreateMap<Book, BooksResponce>()
+            CreateMap<Book, BookResponce>()
                .ForMember( dest => dest.Id, opt => opt.MapFrom( src => src.Id ) )
                .ForMember( dest => dest.ISBN, opt => opt.MapFrom( src => src.ISBN ) )
                .ForMember( dest => dest.Title, opt => opt.MapFrom( src => src.Title ) )
@@ -17,7 +17,9 @@ namespace Library.WebAPI.Mapper {
                .ForMember( dest => dest.AuthorId, opt => opt.MapFrom( src => src.AuthorId ) )
                .ForMember( dest => dest.FirstName, opt => opt.MapFrom( src => src.Author.FirstName ) )
                .ForMember( dest => dest.LastName, opt => opt.MapFrom( src => src.Author.LastName ) )
-               .ForMember( dest => dest.IsTaken, opt => opt.MapFrom( src => ( src is TakenBook ) ? true : false ) );
+               .ForMember( dest => dest.IsTaken, opt => opt.MapFrom( src => ( src is TakenBook ) ? true : false ) )
+               .ForMember( dest => dest.ClientId, opt => opt.MapFrom( src => src is TakenBook ? (Guid?)( src as TakenBook ).ClientId : null ) )
+               .ForMember( dest => dest.Username, opt => opt.MapFrom( src => src is TakenBook ? (string?)( src as TakenBook ).Client.UserName : null ) );
         }
     }
 }

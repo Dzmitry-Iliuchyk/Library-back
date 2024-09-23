@@ -14,7 +14,7 @@ namespace Library.Application.Implementations {
             _validator = validator;
             _imageService = imageService;
         }
-        public async Task CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId ) {
+        public async Task<Guid> CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId ) {
             var book = new FreeBook(
                         id: Guid.NewGuid(),
                         ISBN: ISBN,
@@ -24,6 +24,8 @@ namespace Library.Application.Implementations {
                         authorId: authorId );
             _validator.ValidateAndThrow( book );
             await _unit.bookRepository.CreateBookAsync( book );
+            await _unit.Save();
+            return book.Id;
         }
 
         public async Task UpdateBookAsync( Guid bookId, string ISBN, string title, string genre, string description, Guid authorId ) {
@@ -107,6 +109,9 @@ namespace Library.Application.Implementations {
 
         public async Task<Book> GetBookAsync( Guid bookId ) {
             return await _unit.bookRepository.GetBookAsync( bookId );
+        }
+        public async Task<Book> GetBookWithAllAsync( Guid bookId ) {
+            return await _unit.bookRepository.GetBookWithAllAsync( bookId );
         }
 
         public async Task<Book> GetBookAsync( string ISBN ) {

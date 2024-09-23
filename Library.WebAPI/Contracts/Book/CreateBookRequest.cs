@@ -2,9 +2,10 @@
 
 namespace Library.WebAPI.Contracts.Book {
     public record CreateBookRequest(
-        [Required] string ISBN,
-        [Required] string Title,
-        [Required] string Genre,
-        [Required] string Description,
-        [Required] Guid AuthorId );
+        string ISBN,
+        string Title,
+        string Genre,
+        string Description,
+        Guid AuthorId,
+        IFormFile image );
 }

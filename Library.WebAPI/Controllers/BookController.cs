@@ -29,7 +29,7 @@ namespace Library.WebAPI.Controllers {
         [HttpPost( "[action]" )]
         public async Task<IResult> GetFilteredBooks( BooksRequest request ) {
             var (books, booksCount) = await _bookService.GetFilteredBooksAsync( request.skip, request.take, request.authorFilter, request.titleFilter );
-            IList<BooksResponce> booksResponces = _mapper.Map<IList<BooksResponce>>( books );
+            IList<BookResponce> booksResponces = _mapper.Map<IList<BookResponce>>( books );
             foreach (var item in booksResponces) {
                 item.Image = await _imageService.GetImageAsBase64( item.Id );
             }
@@ -45,32 +45,52 @@ namespace Library.WebAPI.Controllers {
             var books = await _bookService.GetBookAsync( ISBN );
             return Results.Ok( books );
         }
-        [Authorize( Policy = CustomPolicyNames.CanRead )]
         [HttpGet( "{bookId}/[action]" )]
         public async Task<IResult> GetById( [FromRoute] Guid bookId ) {
-            var books = await _bookService.GetBookAsync( bookId );
-            return Results.Ok( books );
+            var book = await _bookService.GetBookWithAllAsync( bookId );
+            var response = _mapper.Map<BookResponce>( book );
+            return Results.Ok( response );
         }
         [HttpPost( "[action]" )]
-        public async Task<IResult> Create( CreateBookRequest request ) {
-            await _bookService.CreateBookAsync( request.ISBN, request.Title, request.Genre, request.Description, request.AuthorId );
+        public async Task<IResult> Create( [FromForm] CreateBookRequest request ) {
+            var id = await _bookService.CreateBookAsync( request.ISBN, request.Title, request.Genre, request.Description, request.AuthorId );
+            if (request.image != null) {
+
+                using (var stream = request.image.OpenReadStream()) {
+                    await _imageService.SaveImage( stream, id );
+                }
+            }
             return Results.Ok();
         }
         [HttpPut( "[action]" )]
-        public async Task<IResult> Update( UpdateBookRequest request ) {
+        public async Task<IResult> Update([FromForm] UpdateBookRequest request ) {
             await _bookService.UpdateBookAsync( request.BookId, request.ISBN, request.Title, request.Genre, request.Description, request.AuthorId );
+            if (request.image != null) {
+
+                using (var stream = request.image.OpenReadStream()) {
+                    await _imageService.SaveImage( stream, request.BookId );
+                }
+            }
             return Results.Ok();
         }
         [Authorize]
-        [HttpPost( "[action]" )]
-        public async Task<IResult> Free( Guid bookId ) {
+        [HttpPost( "{bookId}/[action]" )]
+        public async Task<IResult> FreeBook( [FromRoute] Guid bookId ) {
             var userId = Guid.Parse( HttpContext.User.Claims.First( u => u.Type == CustumClaimTypes.UserId ).Value );
             await _bookService.FreeBookAsync( bookId, userId );
             return Results.Ok();
         }
         [HttpPost( "[action]" )]
-        public async Task<IResult> GiveBook( Guid bookId, Guid clientId, int hoursToUse ) {
+        public async Task<IResult> GiveBookToClientId( Guid bookId, Guid clientId, int hoursToUse ) {
             await _bookService.GiveBookToClientAsync( bookId, clientId, hoursToUse );
+            return Results.Ok();
+        }
+        [Authorize]
+        [HttpPost( "{bookId}/[action]" )]
+        public async Task<IResult> TakeBook( [FromRoute] Guid bookId ) {
+            var userId = Guid.Parse( HttpContext.User.Claims.First( x => x.Type == CustumClaimTypes.UserId ).Value );
+            const int HOURS_TO_USE = 24;
+            await this._bookService.GiveBookToClientAsync( bookId, userId, HOURS_TO_USE );
             return Results.Ok();
         }
         [HttpDelete( "{bookId}/[action]" )]

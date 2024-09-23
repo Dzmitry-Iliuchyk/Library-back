@@ -68,6 +68,15 @@ namespace Library.DataAccess.Repository {
                 ?? throw new BookNotFoundException();
             return _mapper.Map<Book>( bookEntity );
         }
+        public async Task<Book> GetBookWithAllAsync( Guid bookId ) {
+            var bookEntity = await _dbSet
+                .AsNoTracking()
+                .Include(b=>b.Author)
+                .Include(b=>b.User)
+                .FirstOrDefaultAsync( b => b.Id == bookId )
+                ?? throw new BookNotFoundException();
+            return _mapper.Map<Book>( bookEntity );
+        }
 
         public async Task<Book> GetBookAsync( string ISBN ) {
             var bookEntity = await _dbSet

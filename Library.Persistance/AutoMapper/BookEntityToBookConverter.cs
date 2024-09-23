@@ -17,6 +17,13 @@ namespace Library.DataAccess.AutoMapper {
                     birthday: source.Author.Birthday,
                     country: source.Author.Country);
             }
+            User user = null; 
+            if (source.User != null) {
+                user = new User(id: source.User.Id,
+                    userName: source.User.UserName,
+                    passwordHash: source.User.PasswordHash,
+                    email: source.User.Email);
+            }
             
             if (source.BookType == BookType.Free) {
                 return new FreeBook( id: source.Id,
@@ -36,7 +43,8 @@ namespace Library.DataAccess.AutoMapper {
                     authorId: source.AuthorId,
                     takenAt: source.TakenAt.Value,
                     returnTo: source.ReturnTo.Value,
-                    author: author);
+                    author: author,
+                    client: user);
             }
 
             throw new ArgumentException( "Invalid BookType" );

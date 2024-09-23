@@ -265,5 +265,51 @@ namespace Library.Application.Tests {
             Assert.That( result, Is.EqualTo( book ) );
             _mockUnitOfWork.Verify( u => u.bookRepository.GetBookAsync( ISBN ), Times.Once );
         }
+        [Test]
+        public async Task GetFilteredBooksAsync_ShouldInvokeRepo() {
+            // Arrange
+            var authorId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var ISBN = "1234567890";
+            var book = new FreeBook(
+                id: userId,
+                ISBN: ISBN,
+                title: "Test Title",
+                genre: "Test Genre",
+                description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
+                authorId: authorId,
+                author: new Domain.Models.Author( authorId, "test", "test", DateTime.Now.AddYears( -15 ), "test" ) );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetFilteredBooksAsync(0,1, "test", "test" ) ).ReturnsAsync( ([book], 1)  );
+
+            // Act
+            var result = await _bookService.GetFilteredBooksAsync( 0, 1, "test", "test" );
+
+            // Assert
+            Assert.That( result.Item1.First(), Is.EqualTo( book ));
+            _mockUnitOfWork.Verify( u => u.bookRepository.GetFilteredBooksAsync( 0, 1, "test", "test" ), Times.Once );
+        }
+        [Test]
+        public async Task GetBookWithAllAsync_ShouldInvokeRepository() {
+            // Arrange
+            var authorId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var ISBN = "1234567890";
+            var book = new FreeBook(
+                id: userId,
+                ISBN: ISBN,
+                title: "Test Title",
+                genre: "Test Genre",
+                description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
+                authorId: authorId,
+                author: new Domain.Models.Author( authorId, "test", "test", DateTime.Now.AddYears(-15),"test" ) );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookWithAllAsync( userId ) ).ReturnsAsync( book );
+
+            // Act
+            var result = await _bookService.GetBookWithAllAsync( userId );
+
+            // Assert
+            Assert.That( result, Is.EqualTo( book ) );
+            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookWithAllAsync( userId ), Times.Once );
+        }
     }
 }

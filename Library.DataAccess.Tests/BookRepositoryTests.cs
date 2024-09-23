@@ -141,6 +141,21 @@ namespace Library.DataAccess.Tests {
             //Assert
             Assert.That( result, Is.EqualTo( _books.First( x => x.Id == guidsBooks.Item1 ) ) );
         }
+
+        [Test]
+        public async Task GetFilteredBookAsync_ShouldReturnFilteredBook() {
+            //Act
+            var result = await _repository.GetFilteredBooksAsync(0,2, "" , "Test");
+            //Assert
+            Assert.That( result.Item1, Is.EqualTo( _books ) );
+        }
+        [Test]
+        public async Task GetFilteredBookAsync_ShouldNotReturnFilteredBook() {
+            //Act
+            var result = await _repository.GetFilteredBooksAsync(0,2, "adfad" , "Test");
+            //Assert
+            Assert.That( result.Item2, Is.EqualTo( 0 ) );
+        }
         [Test]
         public async Task GetBookAsync_inputISBN_ShouldReturnBook() {
             //Arrange

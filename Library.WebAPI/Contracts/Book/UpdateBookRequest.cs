@@ -2,10 +2,11 @@
 
 namespace Library.WebAPI.Contracts.Book {
     public record UpdateBookRequest(
-        [Required] Guid BookId,
-        [Required] string ISBN,
-        [Required] string Title,
-        [Required] string Genre,
-        [Required] string Description,
-        [Required] Guid AuthorId );
+        Guid BookId,
+        string ISBN,
+        string Title,
+        string Genre,
+        string Description,
+        Guid AuthorId ,
+        IFormFile? image);
 }

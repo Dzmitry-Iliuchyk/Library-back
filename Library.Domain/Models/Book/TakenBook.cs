@@ -3,20 +3,23 @@
 namespace Library.Domain.Models.Book {
     public class TakenBook: Book {
         public Guid ClientId { get; private set; }
+        public User? Client {  get; private set; }
         public DateTime TakenAt { get; private set; }
         public DateTime ReturnTo { get; private set; }
 
-        public TakenBook( Guid id, Guid client_id, string title, string genre, string description, string ISBN, Guid authorId, DateTime takenAt, DateTime returnTo, Author? author = null ) 
-            : base(id, title, genre, description, ISBN, authorId, author ) {
+        public TakenBook( Guid id, Guid client_id, string title, string genre, string description, string ISBN, Guid authorId, DateTime takenAt, DateTime returnTo, Author? author = null, User? client = null )
+            : base( id, title, genre, description, ISBN, authorId, author ) {
             ClientId = client_id;
             TakenAt = takenAt;
             ReturnTo = returnTo;
+            this.Client = client;
         }
-        public TakenBook( FreeBook book, Guid client_id, DateTime takenAt, DateTime returnTo ) 
+        public TakenBook( FreeBook book, Guid client_id, DateTime takenAt, DateTime returnTo, User? client = null ) 
             : base(book.Id, book.Title, book.Genre, book.Description, book.ISBN, book.AuthorId, book.Author ) {
             ClientId = client_id;
             TakenAt = takenAt;
             ReturnTo = returnTo;
+            this.Client = client;
         }
         public override TakenBook Take( Guid clientId , TimeSpan periodOfUse ) {
             throw new BookTakenException( ClientId );

@@ -57,7 +57,7 @@ namespace Library.WebAPI.Controllers {
         public async Task<IResult> GetFilteredBooks( BooksRequest request ) {
             var userId = Guid.Parse( HttpContext.User.Claims.First( x => x.Type == CustumClaimTypes.UserId ).Value );
             var (books, booksCount) = await _userService.GetFilteredBooksAsync( request.skip, request.take, request.authorFilter, request.titleFilter, userId );
-            IList<BooksResponce> booksResponces = _mapper.Map<IList<BooksResponce>>( books );
+            IList<BookResponce> booksResponces = _mapper.Map<IList<BookResponce>>( books );
             foreach (var item in booksResponces) {
                 item.Image = await _imageService.GetImageAsBase64( item.Id );
             }
@@ -85,7 +85,6 @@ namespace Library.WebAPI.Controllers {
             base.Response.Cookies.Append( "Refresh", refreshToken );
             return Results.Ok( );
         }
-        [Authorize]
         [HttpPost( "[action]" )]
         public IResult Logout( ) {
             base.Response.Cookies.Delete( "Auth-Cookies");

@@ -1,6 +1,5 @@
 ﻿namespace Library.DataAccess.DataBase.Entities {
-    public class UserEntity {
-        public Guid Id { get; set; }
+    public class UserEntity : DbEntity{
         public string UserName { get; set; }
         public string PasswordHash { get; set; }
         public string Email { get; set; }

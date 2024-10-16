@@ -1,13 +1,15 @@
 ﻿using FluentValidation;
 using Library.Application.Implementations;
-using Library.Application.Interfaces;
+using Library.Application.Interfaces.Repositories;
+using Library.Application.Interfaces.Services;
 using Library.Application.Validator;
-using Library.Domain.Exceptions;
 using Library.Domain.Interfaces;
+using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using Moq;
 
-namespace Library.Application.Tests {
+namespace Library.Application.Tests
+{
     public class BookServiceTests {
         private Mock<IUnitOfWork> _mockUnitOfWork;
         private Mock<IImageService> _mockImageService;
@@ -32,13 +34,13 @@ namespace Library.Application.Tests {
                 description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
                 authorId: Guid.NewGuid() );
 
-            _mockUnitOfWork.Setup( u => u.bookRepository.CreateBookAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.bookRepository.CreateAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
 
             // Act
             await _bookService.CreateBookAsync( book.ISBN, book.Title, book.Genre, book.Description, book.AuthorId );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.bookRepository.CreateBookAsync( It.IsAny<Book>() ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.CreateAsync( It.IsAny<Book>() ), Times.Once );
         }
         [Test]
         public void CreateBookAsync_WhenDataInValid_ShouldThrowValidationException() {
@@ -51,7 +53,7 @@ namespace Library.Application.Tests {
                 description: "Test",
                 authorId: Guid.NewGuid() );
 
-            _mockUnitOfWork.Setup( u => u.bookRepository.CreateBookAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.bookRepository.CreateAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
 
             //Act & Assert
             Assert.ThrowsAsync<ValidationException>( () => _bookService.CreateBookAsync( book.ISBN, book.Title, book.Genre, book.Description, book.AuthorId ) );
@@ -68,8 +70,8 @@ namespace Library.Application.Tests {
                genre: "Test Genre",
                description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
                authorId: Guid.NewGuid() );
-            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookAsync( bookId ) ).ReturnsAsync( book );
-            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookWithAuthorAsync( bookId ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
 
             // Act
             await _bookService.UpdateBookAsync( bookId, book.ISBN, book.Title, book.Genre, book.Description, book.AuthorId );
@@ -77,7 +79,7 @@ namespace Library.Application.Tests {
             // Assert
 
             _mockUnitOfWork.Verify( u => u.CreateTransaction(), Times.Once );
-            _mockUnitOfWork.Verify( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
             _mockUnitOfWork.Verify( u => u.Commit(), Times.Once );
         }
@@ -92,8 +94,8 @@ namespace Library.Application.Tests {
                genre: "T",
                description: "Test",
                authorId: Guid.NewGuid() );
-            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookAsync( bookId ) ).ReturnsAsync( book );
-            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookWithAuthorAsync( bookId ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
 
             // Act & Assert
             Assert.ThrowsAsync<ValidationException>( () => _bookService.UpdateBookAsync( bookId, book.ISBN, book.Title, book.Genre, book.Description, book.AuthorId ) );
@@ -102,30 +104,42 @@ namespace Library.Application.Tests {
         [Test]
         public async Task DeleteBookAsync_ShouldDeleteBook() {
             // Arrange
-            var bookId = Guid.NewGuid();
-            _mockUnitOfWork.Setup( u => u.bookRepository.DeleteBookAsync( bookId ) ).Returns( Task.CompletedTask );
-            _mockImageService.Setup( i => i.DeleteImage( bookId ) ).Verifiable();
+            var book = new FreeBook(
+               id: Guid.NewGuid(),
+               ISBN: "1234567890",
+               title: "Test Title",
+               genre: "Test Genre",
+               description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
+               authorId: Guid.NewGuid() );
+            _mockUnitOfWork.Setup( u => u.bookRepository.DeleteAsync(book) ).Returns( Task.CompletedTask );
+            _mockImageService.Setup( i => i.DeleteImage( book.Id ) ).Verifiable();
 
             // Act
-            await _bookService.DeleteBookAsync( bookId );
+            await _bookService.DeleteBookAsync( book.Id );
 
             // Assert
             _mockUnitOfWork.Verify( u => u.CreateTransaction(), Times.Once );
-            _mockUnitOfWork.Verify( u => u.bookRepository.DeleteBookAsync( bookId ), Times.Once );
-            _mockImageService.Verify( i => i.DeleteImage( bookId ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.DeleteAsync(It.IsAny<Book>()), Times.Once );
+            _mockImageService.Verify( i => i.DeleteImage( book.Id ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
             _mockUnitOfWork.Verify( u => u.Commit(), Times.Once );
         }
 
         [Test]
-        public void DeleteBookAsync_OccursException_ShouldCallRollback() {
+        public async Task DeleteBookAsync_OccursException_ShouldCallRollback() {
             // Arrange
-            var bookId = Guid.Empty;
-            _mockUnitOfWork.Setup( u => u.bookRepository.DeleteBookAsync( bookId ) ).Throws( new Exception() );
-            _mockImageService.Setup( i => i.DeleteImage( bookId ) ).Verifiable();
+            var book = new FreeBook(
+               id: Guid.NewGuid(),
+               ISBN: "1234567890",
+               title: "Test Title",
+               genre: "Test Genre",
+               description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
+               authorId: Guid.NewGuid() );
+            _mockUnitOfWork.Setup( u => u.bookRepository.DeleteAsync(book) ).Verifiable( );
+            _mockImageService.Setup( i => i.DeleteImage( book.Id ) ).Throws(new Exception());
 
             //Act & Assert
-            Assert.ThrowsAsync<Exception>( () => _bookService.DeleteBookAsync( bookId ) );
+            Assert.ThrowsAsync<Exception>( () => _bookService.DeleteBookAsync( book.Id )) ;
             _mockUnitOfWork.Verify( u => u.Rollback(), Times.Once );
 
         }
@@ -143,23 +157,28 @@ namespace Library.Application.Tests {
                 authorId: Guid.NewGuid(),
                 takenAt: DateTime.Now,
                 returnTo: DateTime.Now.AddDays( 7 ) );
-            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookAsync( bookId ) ).ReturnsAsync( book );
-            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookWithAllAsync( bookId ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
 
             // Act
             await _bookService.FreeBookAsync( bookId, clientId );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookAsync( bookId ), Times.Once );
-            _mockUnitOfWork.Verify( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookWithAllAsync( bookId ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
         }
 
         [Test]
         public async Task GiveBookToClientAsync_ShouldGiveBookToClient() {
             // Arrange
-            var bookId = Guid.NewGuid();
-            var clientId = Guid.NewGuid();
+            var userName = "testUser";
+            var email = "test@example.com";
+            var password = "password";
+            var refreshToken = "refreshToken";
+            var token = "token";
+            var hashedPassword = "papdsapd";
+            var user = new User( Guid.NewGuid(), userName, email, hashedPassword );
             var book = new FreeBook(
                 id: Guid.NewGuid(),
                 ISBN: "1234567890",
@@ -167,42 +186,49 @@ namespace Library.Application.Tests {
                 genre: "Test Genre",
                 description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
                 authorId: Guid.NewGuid() );
-            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookAsync( bookId ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetAsync( book.Id ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.userRepository.GetAsync( user.Id ) ).ReturnsAsync( user );
 
-            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
 
             // Act
-            await _bookService.GiveBookToClientAsync( bookId, clientId, 48 );
+            await _bookService.GiveBookToClientAsync( book.Id, user.Id, 48 );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.CreateTransaction(), Times.Once );
-            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookAsync( bookId ), Times.Once );
-            _mockUnitOfWork.Verify( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.GetAsync( book.Id ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
-            _mockUnitOfWork.Verify( u => u.Commit(), Times.Once );
+
         }
         [Test]
-        public void GiveBookToClientAsync_OccursBookTakenException_ShouldCallRollback() {
+        public async Task GiveTakenBookToClientAsync_ShouldNotCallUpdate() {
             // Arrange
-            var bookId = Guid.NewGuid();
-            var clientId = Guid.NewGuid();
-            var book = new TakenBook( id: bookId,
-                client_id: clientId,
+            var userName = "testUser";
+            var email = "test@example.com";
+            var password = "password";
+            var refreshToken = "refreshToken";
+            var token = "token";
+            var hashedPassword = "papdsapd";
+            var user = new User( Guid.NewGuid(), userName, email, hashedPassword );
+            var book = new TakenBook(
+                id: Guid.NewGuid(),
+                client_id: user.Id,
                 ISBN: "1234567890",
                 title: "Test Title",
                 genre: "Test Genre",
-                description: "Test Description",
-                authorId: Guid.NewGuid(),
-                takenAt: DateTime.Now,
-                returnTo: DateTime.Now.AddDays( 7 ) );
-            
-            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookAsync( bookId ) ).ReturnsAsync( book );
-            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateBook( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
+                description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
+                takenAt: DateTime.UtcNow,
+                returnTo: DateTime.UtcNow.AddDays(3),
+                authorId: Guid.NewGuid() );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetAsync( book.Id ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.userRepository.GetAsync( user.Id ) ).ReturnsAsync( user );
+
+            _mockUnitOfWork.Setup( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ) ).Returns( Task.CompletedTask );
 
             // Act & Assert
-            Assert.ThrowsAsync<BookTakenException>( () => _bookService.GiveBookToClientAsync( bookId, clientId, 48 ) );
-            _mockUnitOfWork.Verify( u => u.CreateTransaction(), Times.Once );
-            _mockUnitOfWork.Verify( u => u.Rollback(), Times.Once );
+            await _bookService.GiveBookToClientAsync( book.Id, user.Id, 48 );
+            _mockUnitOfWork.Verify( u => u.bookRepository.UpdateAsync( It.IsAny<Book>() ), Times.Never );
+            _mockUnitOfWork.Verify( u => u.Save(), Times.Never );
         }
         [Test]
         public async Task GetBooksAsync_ShouldReturnBooks() {
@@ -235,14 +261,14 @@ namespace Library.Application.Tests {
                 genre: "Test Genre",
                 description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
                 authorId: Guid.NewGuid() );
-            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookAsync( bookId ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookWithAuthorAsync( bookId ) ).ReturnsAsync( book );
 
             // Act
-            var result = await _bookService.GetBookAsync( bookId );
+            var result = await _bookService.GetBookWithAuthorAsync( bookId );
 
             // Assert
             Assert.That( result, Is.EqualTo( book ) );
-            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookAsync( bookId ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookWithAuthorAsync( bookId ), Times.Once );
         }
 
         [Test]
@@ -256,14 +282,14 @@ namespace Library.Application.Tests {
                 genre: "Test Genre",
                 description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
                 authorId: Guid.NewGuid() );
-            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookAsync( ISBN ) ).ReturnsAsync( book );
+            _mockUnitOfWork.Setup( u => u.bookRepository.GetBookWithAuthorAsync( ISBN ) ).ReturnsAsync( book );
 
             // Act
             var result = await _bookService.GetBookAsync( ISBN );
 
             // Assert
             Assert.That( result, Is.EqualTo( book ) );
-            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookAsync( ISBN ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.bookRepository.GetBookWithAuthorAsync( ISBN ), Times.Once );
         }
         [Test]
         public async Task GetFilteredBooksAsync_ShouldInvokeRepo() {

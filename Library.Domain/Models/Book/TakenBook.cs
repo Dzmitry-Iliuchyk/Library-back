@@ -1,4 +1,4 @@
-﻿using Library.Domain.Exceptions;
+﻿
 
 namespace Library.Domain.Models.Book {
     public class TakenBook: Book {
@@ -21,16 +21,7 @@ namespace Library.Domain.Models.Book {
             ReturnTo = returnTo;
             this.Client = client;
         }
-        public override TakenBook Take( Guid clientId , TimeSpan periodOfUse ) {
-            throw new BookTakenException( ClientId );
-        }
-        public override FreeBook Free( Guid clientId ) {
-            if (ClientId == clientId) {
-                return new FreeBook( this );
-            }
 
-            throw new BookFreeException();
-        }
         public override bool Equals( Book? other ) {
             return other is TakenBook takenBook 
                   && takenBook.ISBN == ISBN 

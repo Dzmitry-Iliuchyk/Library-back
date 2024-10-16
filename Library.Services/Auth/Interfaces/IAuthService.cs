@@ -1,6 +1,4 @@
-﻿using Library.Application.Auth.Entities;
-using Library.Application.Auth.Enums;
-using Library.Domain.Models;
+﻿using Library.Application.Auth.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Library.Application.Auth.Interfaces {
-    public interface IAuthRepository {
+    public interface IAuthService {
         Task AddUserToGroup( Guid userId, AccessGroupEnum group );
-        Task<RefreshToken?> GetLastRefreshToken( Guid userId );
+        Task<string?> GetActiveRefreshToken( Guid userId );
         Task<HashSet<AccessGroupEnum>> GetUserGroups( Guid userId );
         Task<HashSet<PermissionEnum>> GetUserPermissions( Guid userId );
         Task RemoveAllRefreshTokens( Guid userId );

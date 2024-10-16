@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Library.Application.Auth.Entities;
 using Library.Application.Auth.Enums;
 using Library.DataAccess.DataBase.Configuration;
 using Library.DataAccess.DataBase.Entities;

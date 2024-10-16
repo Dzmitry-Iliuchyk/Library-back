@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Application.Interfaces {
-    public interface IUnitOfWork {
+namespace Library.Application.Interfaces.Repositories
+{
+    public interface IUnitOfWork
+    {
         public IUserRepository userRepository { get; }
 
         public IBookRepository bookRepository { get; }

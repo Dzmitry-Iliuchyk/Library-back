@@ -6,16 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Library.Domain.Models {
-    public class User {
-        public User( Guid id, string userName, string passwordHash, string email, IEnumerable<Book.Book> books = null) {
-            Id = id;
+    public class User: Entity {
+        public User( Guid id, string userName, string passwordHash, string email, IEnumerable<Book.Book> books = null): base(id) {
             UserName = userName;
             PasswordHash = passwordHash;
             Email = email;
             Books = books;
         }
-
-        public Guid Id { get; private set; }
 
         public string UserName { get; private set; }
 

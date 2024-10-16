@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.DataAccess.DataBase.Entities {
+namespace Library.Application.Auth.Entities {
     public class RefreshToken {
         public Guid Id { get; set; }
         public string Token { get; set; }

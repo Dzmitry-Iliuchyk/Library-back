@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Library.Application.Auth.Entities;
 using Library.Application.Auth.Enums;
 using Library.Application.Auth.Interfaces;
 using Library.DataAccess.DataBase.Contexts;
@@ -40,13 +41,13 @@ namespace Library.DataAccess.Repository {
                 _token.RemoveRange( tokenRecords );
             }
         }
-        public async Task<string?> GetActiveRefreshToken( Guid userId ) {
+        public async Task<RefreshToken?> GetLastRefreshToken( Guid userId ) {
 
-            var token = await _token.AsNoTracking().FirstOrDefaultAsync( t => t.UserId == userId);
-            if (token?.ExpiryDate> DateTime.UtcNow) { 
-                 return token?.Token;
-            }
-           return null;
+            var token = await _token.AsNoTracking()
+                .OrderByDescending(x=>x.ExpiryDate)
+                .Where(x=>x.UserId == userId)
+                .FirstOrDefaultAsync();
+            return token;
         }
         public async Task SaveRefreshToken( Guid userId, string token ) {
 
@@ -60,8 +61,7 @@ namespace Library.DataAccess.Repository {
         }
         public async Task AddUserToGroup( Guid userId, AccessGroupEnum group ) {
             var searchedGroup = await _groups
-                .FirstOrDefaultAsync( r => r.Name == group.ToString() )
-                ?? throw new GroupNotFountException();
+                .FirstOrDefaultAsync( r => r.Name == group.ToString() );
             var userEntity = await _users
                .FirstOrDefaultAsync( u => u.Id == userId );
             userEntity.Groups.Add( searchedGroup );
@@ -70,15 +70,13 @@ namespace Library.DataAccess.Repository {
 
         public async Task RemoveUserFromGroup( Guid userId, AccessGroupEnum group ) {
             var searchedGroup = await _groups
-                .Include(u=>u.Users)
-                .FirstOrDefaultAsync( r => r.Name == group.ToString() )
-                ?? throw new GroupNotFountException();
+                .Include( u => u.Users )
+                .FirstOrDefaultAsync( r => r.Name == group.ToString() );
             var userEntity = await _users
                 .Include(u=>u.Groups)
                 .FirstOrDefaultAsync( u => u.Id == userId );
 
-            if (userEntity.Groups.Contains( searchedGroup )) {
-                userEntity.Groups.Remove( searchedGroup );
+            if (userEntity.Groups.Remove( searchedGroup )) {
                 _users.Update( userEntity );
             }
         }

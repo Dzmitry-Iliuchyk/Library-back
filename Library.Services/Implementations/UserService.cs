@@ -3,13 +3,14 @@ using Library.Application.Auth.Enums;
 using Library.Application.Auth.Interfaces;
 using Library.Application.Exceptions;
 using Library.Application.Helpers;
-using Library.Application.Interfaces;
+using Library.Application.Interfaces.Repositories;
 using Library.Domain.Interfaces;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using Microsoft.AspNetCore.Identity;
 
-namespace Library.Application.Implementations {
+namespace Library.Application.Implementations
+{
     public class UserService: IUserService {
         private readonly IUnitOfWork _unit;
         private readonly IValidator<User> _validator;
@@ -23,6 +24,8 @@ namespace Library.Application.Implementations {
             this._tokenService = tokenService;
         }
 
+ 
+        /// <returns>First parameter is AccessToken, second is RefreshToken</returns>
         public async Task<(string, string)> Register( string userName, string email, string password ) {
             try {
                 _unit.CreateTransaction();
@@ -31,7 +34,7 @@ namespace Library.Application.Implementations {
                     email: email,
                     passwordHash: _hasher.HashPassword( null, password ) );
                 _validator.ValidateAndThrow( user );
-                await _unit.userRepository.CreateUserAsync( user );
+                await _unit.userRepository.CreateAsync( user );
                 await _unit.Save();
                 await _unit.authRepository.AddUserToGroup( user.Id, Auth.Enums.AccessGroupEnum.User );
                 await _unit.Save();
@@ -48,7 +51,7 @@ namespace Library.Application.Implementations {
             }
             
         }
-
+        /// <returns>First parameter is AccessToken, second is RefreshToken</returns>
         public async Task<(string, string)> Login( string email, string password ) {
             var user = await _unit.userRepository.GetAsync( email );
 
@@ -65,12 +68,12 @@ namespace Library.Application.Implementations {
             await _unit.Save();
             return (token, refreshToken);
         }
-
+        /// <returns>First parameter is AccessToken, second is RefreshToken</returns>
         public async Task<(string, string)> LoginByRefresh( string accessToken, string refreshToken ) {
             var userId = _tokenService.GetUserIdFromExpiredToken(accessToken);
             var user = await _unit.userRepository.GetAsync( userId );
-            var refreshTokeninDb = await _unit.authRepository.GetActiveRefreshToken(userId);
-            if (refreshTokeninDb!=refreshToken)
+            var refreshTokeninDb = await _unit.authRepository.GetLastRefreshToken(userId);
+            if (refreshTokeninDb.ExpiryDate<DateTime.UtcNow && refreshTokeninDb.Token!=refreshToken)
             {
                 throw new InvalidTokenException("Неверный токен!");
             }
@@ -80,12 +83,13 @@ namespace Library.Application.Implementations {
         }
 
         public async Task Delete( Guid userId ) {
-            await _unit.userRepository.DeleteUserAsync( userId );
+            var user = await _unit.userRepository.GetAsync( userId );
+            await _unit.userRepository.DeleteAsync( user );
             await _unit.Save();
         }
 
         public async Task<IList<User>> GetUsers( int skip, int take ) {
-            return await _unit.userRepository.GetUsersAsync( skip, take );
+            return await _unit.userRepository.GetManyAsync( skip, take );
         }
         public async Task<(IList<TakenBook>, int)> GetFilteredBooksAsync( int skip, int take, string? authorFilter, string? titleFilter, Guid userId ) {
             return await _unit.userRepository.GetFilteredBooksAsync( skip, take, authorFilter, titleFilter, userId );
@@ -116,7 +120,7 @@ namespace Library.Application.Implementations {
                     email: email,
                     passwordHash: userInDb.PasswordHash );
                 _validator.ValidateAndThrow( user );
-                await _unit.userRepository.UpdateUser( user );
+                await _unit.userRepository.UpdateAsync( user );
                 await _unit.Save();
                 _unit.Commit();
             }

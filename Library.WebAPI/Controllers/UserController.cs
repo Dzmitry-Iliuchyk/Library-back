@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Library.Application.Auth.Enums;
 using Library.Application.Implementations;
+using Library.Application.Interfaces.Services;
 using Library.DataAccess.DataBase.Entities;
 using Library.Domain.Interfaces;
 using Library.Infrastracture;
@@ -15,6 +16,8 @@ namespace Library.WebAPI.Controllers {
     [Route( "api/[controller]" )]
     [ApiController]
     public class UserController: ControllerBase {
+        private const string ACCESS_TOKEN_KEY = "Auth-Cookies";
+        private const string REFRESH_TOKEN_KEY = "Refresh";
         private readonly IUserService _userService;
         private readonly IImageService _imageService;
         private readonly IMapper _mapper;
@@ -72,8 +75,8 @@ namespace Library.WebAPI.Controllers {
         public async Task<IResult> Register( RegisterUserRequest request ) {
             var (token, refreshToken) = await _userService.Register( request.UserName, request.Email, request.Password );
      
-            base.Response.Cookies.Append( "Auth-Cookies", token );
-            base.Response.Cookies.Append( "Refresh", refreshToken );
+            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, token );
+            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, refreshToken );
             return Results.Ok();
         }
         [AllowAnonymous]
@@ -81,24 +84,24 @@ namespace Library.WebAPI.Controllers {
         public async Task<IResult> Login( LoginUserRequest request ) {
             var (token, refreshToken) = await _userService.Login( request.Email, request.Password );
 
-            base.Response.Cookies.Append( "Auth-Cookies", token );
-            base.Response.Cookies.Append( "Refresh", refreshToken );
+            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, token );
+            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, refreshToken );
             return Results.Ok( );
         }
         [HttpPost( "[action]" )]
         public IResult Logout( ) {
-            base.Response.Cookies.Delete( "Auth-Cookies");
-            base.Response.Cookies.Delete( "Refresh" );
+            base.Response.Cookies.Delete( ACCESS_TOKEN_KEY );
+            base.Response.Cookies.Delete( REFRESH_TOKEN_KEY );
             return Results.Ok( );
         }
         [AllowAnonymous]
         [HttpPost( "[action]" )]
         public async Task<IResult> LoginByRefresh( ) {
-            var accessToken = base.Request.Cookies[ "Auth-Cookies" ]?.ToString();
-            var refresh = base.Request.Cookies[ "Refresh" ]?.ToString();
+            var accessToken = base.Request.Cookies[ ACCESS_TOKEN_KEY ]?.ToString();
+            var refresh = base.Request.Cookies[ REFRESH_TOKEN_KEY ]?.ToString();
             var (token, refreshToken) = await _userService.LoginByRefresh( accessToken, refresh );
-            base.Response.Cookies.Append( "Auth-Cookies", token );
-            base.Response.Cookies.Append( "Refresh", refreshToken );
+            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, token );
+            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, refreshToken );
             return Results.Ok();
         }
         [Authorize(Policy = CustomPolicyNames.Admin)]

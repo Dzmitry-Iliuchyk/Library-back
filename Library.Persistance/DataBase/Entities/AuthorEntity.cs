@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Library.DataAccess.DataBase.Entities {
-    public class AuthorEntity {
-        public Guid Id { get; set; }
+    public class AuthorEntity : DbEntity {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime Birthday { get; set; }

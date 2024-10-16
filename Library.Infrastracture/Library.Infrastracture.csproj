@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Library.Services\Library.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

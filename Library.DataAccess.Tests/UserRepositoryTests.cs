@@ -87,7 +87,7 @@ namespace Library.DataAccess.Tests {
                 email: "Newvalid2@mail.cim",
                 passwordHash: hasher.HashPassword( null, "password" ) );
             //Act
-            await _repository.CreateUserAsync( newUser );
+            await _repository.CreateAsync( newUser );
             await _context.SaveChangesAsync();
             //Assert
             Assert.That( _context.Users.First( x => x.Id == newUser.Id ).Id, Is.EqualTo( newUser.Id ) );
@@ -103,7 +103,7 @@ namespace Library.DataAccess.Tests {
                 email: "Newvalid2@mail.cim",
                 passwordHash: hasher.HashPassword( null, "password" ) );
             //Act
-            await _repository.UpdateUser( updatedUser );
+            await _repository.UpdateAsync( updatedUser );
             await _context.SaveChangesAsync();
             var updatedAuthorInDb = _context.Users.First( x => x.Id == guidsUser.Item2 );
             //Assert
@@ -113,7 +113,7 @@ namespace Library.DataAccess.Tests {
         public async Task DeleteUserAsync_ShouldDeleteUser() {
 
             //Act
-            await _repository.DeleteUserAsync( guidsUser.Item1 );
+            await _repository.DeleteAsync( _mapper.Map<User>(_users.First()) );
             await _context.SaveChangesAsync();
             //Assert
             Assert.That( _context.Users.Count(), Is.EqualTo( 1 ) );
@@ -122,7 +122,7 @@ namespace Library.DataAccess.Tests {
         public async Task GetUsersAsync_ShouldReturnUsers() {
 
             //Act
-            var result = await _repository.GetUsersAsync( 0, 2 );
+            var result = await _repository.GetManyAsync( 0, 2 );
             //Assert
             Assert.That( result.Count, Is.EqualTo( 2 ) );
         }

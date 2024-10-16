@@ -3,7 +3,7 @@
 namespace Library.Domain.Interfaces {
     public interface IBookService {
         Task<IList<Book>> GetBooksAsync( int skip, int take );
-        Task<Book> GetBookAsync( Guid bookId );
+        Task<Book> GetBookWithAuthorAsync( Guid bookId );
         Task<Book> GetBookAsync( string ISBN );
         Task<Guid> CreateBookAsync( string ISBN, string title, string genre, string description, Guid authorId );
         Task DeleteBookAsync( Guid bookId );

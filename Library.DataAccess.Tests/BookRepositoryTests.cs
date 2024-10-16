@@ -94,7 +94,7 @@ namespace Library.DataAccess.Tests {
                 authorId: guidsAuthors.Item1 );
 
             //Act
-            await _repository.CreateBookAsync( newBook );
+            await _repository.CreateAsync( newBook );
             await _context.SaveChangesAsync();
             //Assert
             Assert.That( _context.Books.FirstOrDefault( x => x.Title == newBook.Title ).Title, Is.EqualTo( newBook.Title ) );
@@ -112,16 +112,16 @@ namespace Library.DataAccess.Tests {
                 description: "Test DescriptionTest DescriptionTest DescriptionTest Description",
                 authorId: guidsAuthors.Item1 );
             //Act
-            await _repository.UpdateBook( newBook );
+            await _repository.UpdateAsync( newBook );
             await _context.SaveChangesAsync();
             var updatedBookInDb = _context.Books.First( x => x.Id == guidsBooks.Item1 );
             //Assert
             Assert.That( updatedBookInDb.Title, Is.EqualTo( newBook.Title ) );
         }
         [Test]
-        public async Task DeleteAuthorAsync_ShouldDeleteAuthor() {
+        public async Task DeleteBookAsync_ShouldDeleteBook() {
             //Act
-            await _repository.DeleteBookAsync( guidsBooks.Item2 );
+            await _repository.DeleteAsync(_books.First());
             await _context.SaveChangesAsync();
             //Assert
             Assert.That( _context.Books.Count(), Is.EqualTo( 1 ) );
@@ -137,7 +137,7 @@ namespace Library.DataAccess.Tests {
         [Test]
         public async Task GetBookAsync_inputGuid_ShouldReturnBook() {
             //Act
-            var result = await _repository.GetBookAsync( guidsBooks.Item1 );
+            var result = await _repository.GetBookWithAuthorAsync( guidsBooks.Item1 );
             //Assert
             Assert.That( result, Is.EqualTo( _books.First( x => x.Id == guidsBooks.Item1 ) ) );
         }
@@ -161,7 +161,7 @@ namespace Library.DataAccess.Tests {
             //Arrange
             var book = _books.First( x => x.Id == guidsBooks.Item1 );
             //Act
-            var result = await _repository.GetBookAsync( book.ISBN );
+            var result = await _repository.GetBookWithAuthorAsync( book.ISBN );
             //Assert
             Assert.That( result, Is.EqualTo( _books.First( x => x.Id == guidsBooks.Item1 ) ) );
         }

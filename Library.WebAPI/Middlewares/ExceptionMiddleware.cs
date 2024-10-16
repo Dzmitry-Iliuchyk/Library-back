@@ -1,7 +1,6 @@
 ﻿
 using FluentValidation;
 using Library.DataAccess.Exceptions;
-using Library.Domain.Exceptions;
 using Library.WebAPI.Contracts.Middleware;
 using System.Net;
 using ApplicationException = Library.Application.Exceptions.ApplicationException;
@@ -11,12 +10,6 @@ namespace Library.WebAPI.Middlewares {
         public async Task InvokeAsync( HttpContext context, RequestDelegate next ) {
             try {
                 await next( context );
-            }
-            catch (BookTakenException ex) {
-                await HandleDefaultException( context, ex, HttpStatusCode.BadRequest );
-            }
-            catch(DomainException ex) {
-                await HandleDefaultException( context, ex, HttpStatusCode.BadRequest );
             }
             catch(DataAccessException ex) {
                 await HandleDefaultException( context, ex, HttpStatusCode.BadRequest );

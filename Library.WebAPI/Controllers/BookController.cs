@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Library.Application.Interfaces.Services;
 using Library.Domain.Interfaces;
 using Library.Infrastracture;
 using Library.WebAPI.Contracts.Book;

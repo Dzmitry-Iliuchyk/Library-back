@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Library.Domain.Interfaces {
+namespace Library.Application.Interfaces.Services {
     public interface IImageService {
-        Task<string> SaveImage(Stream imageStream, Guid bookId );
+        Task<string> SaveImage( Stream imageStream, Guid bookId, string format = "png" );
         void DeleteImage(Guid bookId);
         Task<byte[]> GetImage(Guid bookId);
         Task<string> GetImageAsBase64( Guid bookId );

@@ -103,7 +103,7 @@ namespace Library.DataAccess.Tests {
             };
 
             //Act
-            await _repository.AddAuthorAsync( author );
+            await _repository.CreateAsync( author );
             await _context.SaveChangesAsync();
             //Assert
             Assert.That( GetAuthorFromContext( x => x.FirstName == author.FirstName ).Id, Is.EqualTo( authorEntity.Id ) );
@@ -120,7 +120,7 @@ namespace Library.DataAccess.Tests {
                 country: "England"
             );
             //Act
-            await _repository.UpdateAuthorAsync( updatedAuthor );
+            await _repository.UpdateAsync( updatedAuthor );
             await _context.SaveChangesAsync();
             var updatedAuthorInDb = GetAuthorFromContext( x => x.Id == guids.Item2 );
             //Assert
@@ -132,7 +132,7 @@ namespace Library.DataAccess.Tests {
         [Test]
         public async Task DeleteAuthorAsync_ShouldDeleteAuthor() {
             //Act
-            await _repository.DeleteAuthorAsync( guids.Item2 );
+            await _repository.DeleteAsync( _authors.First() );
             await _context.SaveChangesAsync();
             //Assert
             Assert.That( _context.Authors.Count(), Is.EqualTo( 1 ) );
@@ -141,7 +141,7 @@ namespace Library.DataAccess.Tests {
         [Test]
         public async Task GetAuthorsAsync_ShouldReturnAuthors() {
             //Act
-            var result = await _repository.GetAuthorsAsync( 0, 2 );
+            var result = await _repository.GetManyAsync( 0, 2 );
             //Assert
             Assert.That( result.Count, Is.EqualTo( 2 ) );
             Assert.That( result.FirstOrDefault( x => x.FirstName == _authors.ElementAt( 1 ).FirstName ).Id, Is.EqualTo( _authors.ElementAt( 1 ).Id ) );
@@ -149,7 +149,7 @@ namespace Library.DataAccess.Tests {
         [Test]
         public async Task GetAuthorAsync_ShouldReturnAuthor() {
             //Act
-            var result = await _repository.GetAuthorAsync( guids.Item2 );
+            var result = await _repository.GetAuthorWithBooksAsync( guids.Item2 );
             //Assert
             Assert.That( result, Is.EqualTo( _authors.ElementAt(1) ) );
            

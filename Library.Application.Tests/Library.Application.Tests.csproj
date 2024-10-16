@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Library.Infrastracture\Library.Infrastracture.csproj" />
+    <ProjectReference Include="..\Library.Persistance\Library.DataAccess.csproj" />
     <ProjectReference Include="..\Library.Services\Library.Application.csproj" />
   </ItemGroup>
 

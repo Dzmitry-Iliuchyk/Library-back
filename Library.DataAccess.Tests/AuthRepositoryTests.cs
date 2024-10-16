@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Library.Application.Auth.Entities;
 using Library.Application.Auth.Enums;
 using Library.DataAccess.DataBase.Configuration;
 using Library.DataAccess.DataBase.Contexts;
@@ -110,11 +111,11 @@ namespace Library.DataAccess.Tests {
                 new RefreshToken() { Id = guidsRefreshToken.Item2, ExpiryDate = DateTime.UtcNow.AddDays( 2 ), Token = refreshToken, UserId = guidsUser.Item2 } );
             _context.SaveChanges();
             //Act
-            var user1Token = await _repository.GetActiveRefreshToken( guidsUser.Item1 );
-            var user2Token = await _repository.GetActiveRefreshToken( guidsUser.Item2 );
+            var user1Token = (await _repository.GetLastRefreshToken( guidsUser.Item1 ))?.Token;
+            var user2Token = (await _repository.GetLastRefreshToken( guidsUser.Item2 ))?.Token;
 
             //Assert
-            Assert.That( user1Token, Is.EqualTo( null ) );
+            Assert.That( user1Token, Is.EqualTo( "2BvqedYc%2FWZIHYv7AJumoc%3D" ) );
             Assert.That( user2Token, Is.EqualTo( refreshToken ) );
         }
         [Test]

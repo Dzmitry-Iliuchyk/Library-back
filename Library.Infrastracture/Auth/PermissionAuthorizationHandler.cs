@@ -1,8 +1,9 @@
-﻿using Library.Application.Interfaces;
+﻿using Library.Application.Interfaces.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Library.Infrastracture.Auth {
+namespace Library.Infrastracture.Auth
+{
     public class PermissionAuthorizationHandler: AuthorizationHandler<PermissionRequirement> {
         private readonly IServiceScopeFactory _serviceScopeFactory;
 

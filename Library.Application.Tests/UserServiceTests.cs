@@ -3,14 +3,15 @@ using Library.Application.Auth.Enums;
 using Library.Application.Auth.Interfaces;
 using Library.Application.Exceptions;
 using Library.Application.Implementations;
-using Library.Application.Interfaces;
+using Library.Application.Interfaces.Repositories;
 using Library.Application.Validator;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 
-namespace Library.Application.Tests {
+namespace Library.Application.Tests
+{
     public class UserServiceTests {
         private Mock<IUnitOfWork> _mockUnitOfWork;
         private Mock<ITokenService> _mockTokenService;
@@ -37,7 +38,7 @@ namespace Library.Application.Tests {
             var hashedPassword = _hasher.HashPassword( null, password );
             var user = new User( Guid.NewGuid(), userName, email, hashedPassword );
 
-            _mockUnitOfWork.Setup( u => u.userRepository.CreateUserAsync( user ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.userRepository.CreateAsync( user ) ).Returns( Task.CompletedTask );
             _mockUnitOfWork.Setup( u => u.authRepository.AddUserToGroup( user.Id, Auth.Enums.AccessGroupEnum.User ) ).Returns( Task.CompletedTask );
             _mockUnitOfWork.Setup( u => u.authRepository.SaveRefreshToken( user.Id, It.IsAny<string>() ) ).Returns( Task.CompletedTask );
             _mockTokenService.Setup( t => t.GenerateToken( It.IsAny<User>() ) ).Returns( token );
@@ -51,7 +52,7 @@ namespace Library.Application.Tests {
             Assert.That( result.Item2, Is.EqualTo( refreshToken ) );
             _mockUnitOfWork.Verify( u => u.CreateTransaction(), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Exactly( 3 ) );
-            _mockUnitOfWork.Verify( u => u.userRepository.CreateUserAsync( It.IsAny<User>() ), Times.Exactly( 1 ) );
+            _mockUnitOfWork.Verify( u => u.userRepository.CreateAsync( It.IsAny<User>() ), Times.Exactly( 1 ) );
             _mockUnitOfWork.Verify( u => u.authRepository.AddUserToGroup( It.IsAny<Guid>(), It.IsAny<AccessGroupEnum>() ), Times.Once() );
             _mockUnitOfWork.Verify( u => u.authRepository.SaveRefreshToken( It.IsAny<Guid>(), It.IsAny<string>() ), Times.Once() );
             _mockUnitOfWork.Verify( u => u.Commit(), Times.Once );
@@ -111,51 +112,74 @@ namespace Library.Application.Tests {
             // Arrange
             var userId = Guid.NewGuid();
             var accessToken = "expiredAccessToken";
-            var refreshToken = "validRefreshToken";
             var email = "test@example.com";
             var password = "password";
             var hashedPassword = _hasher.HashPassword( null, password );
             var user = new User( userId, "testUser", hashedPassword, email );
+            var refreshToken = new Auth.Entities.RefreshToken() {
+                Id = Guid.NewGuid(),
+                Token = "validRefreshToken",
+                ExpiryDate = DateTime.UtcNow.AddDays( 7 ),
+                UserId = user.Id
+            };
             _mockTokenService.Setup( t => t.GetUserIdFromExpiredToken( accessToken ) ).Returns( userId );
             _mockUnitOfWork.Setup( u => u.userRepository.GetAsync( userId ) ).ReturnsAsync( user );
-            _mockUnitOfWork.Setup( u => u.authRepository.GetActiveRefreshToken( userId ) ).ReturnsAsync( refreshToken );
+            _mockUnitOfWork.Setup( u => u.authRepository.GetLastRefreshToken( userId ) ).ReturnsAsync( refreshToken );
             _mockTokenService.Setup( t => t.GenerateToken( user ) ).Returns( "newAccessToken" );
 
             // Act
-            var result = await _userService.LoginByRefresh( accessToken, refreshToken );
+            var result = await _userService.LoginByRefresh( accessToken, refreshToken.Token );
 
             // Assert
             Assert.That( result.Item1, Is.EqualTo( "newAccessToken" ) );
-            Assert.That( result.Item2, Is.EqualTo( refreshToken ) );
+            Assert.That( result.Item2, Is.EqualTo( refreshToken.Token ) );
         }
         [Test]
         public void LoginByRefresh_ShouldThrowInvalidTokenException_WhenRefreshTokenIsInvalid() {
             // Arrange
             var userId = Guid.NewGuid();
             var accessToken = "expiredAccessToken";
-            var refreshToken = "invalidRefreshToken";
             var email = "test@example.com";
             var password = "password";
             var hashedPassword = _hasher.HashPassword( null, password );
             var user = new User( userId, "testUser", hashedPassword, email );
+            var invalidRefreshToken = new Auth.Entities.RefreshToken() {
+                Id = Guid.NewGuid(),
+                Token = "invalidRefreshToken",
+                ExpiryDate = DateTime.UtcNow.AddDays( 7 ),
+                UserId = user.Id
+            };
+            var validRefreshToken = new Auth.Entities.RefreshToken() {
+                Id = Guid.NewGuid(),
+                Token = "validRefreshToken",
+                ExpiryDate = DateTime.UtcNow.AddDays( -7 ),
+                UserId = user.Id
+            };
             _mockTokenService.Setup( t => t.GetUserIdFromExpiredToken( accessToken ) ).Returns( userId );
             _mockUnitOfWork.Setup( u => u.userRepository.GetAsync( userId ) ).ReturnsAsync( user );
-            _mockUnitOfWork.Setup( u => u.authRepository.GetActiveRefreshToken( userId ) ).ReturnsAsync( "validRefreshToken" );
+            _mockUnitOfWork.Setup( u => u.authRepository.GetLastRefreshToken( userId ) ).ReturnsAsync( validRefreshToken );
 
             // Act & Assert
-            var ex = Assert.ThrowsAsync<InvalidTokenException>( () => _userService.LoginByRefresh( accessToken, refreshToken ) );
+            var ex = Assert.ThrowsAsync<InvalidTokenException>( () => _userService.LoginByRefresh( accessToken, invalidRefreshToken.Token ) );
             Assert.That( ex.Message, Is.EqualTo( "Неверный токен!" ) );
         }
         [Test]
         public async Task Delete_ShouldCallDeleteUserAsync_AndSave() {
             // Arrange
-            var userId = Guid.NewGuid();
-            _mockUnitOfWork.Setup( u => u.userRepository.DeleteUserAsync( userId ) ).Returns( Task.CompletedTask );
+            var userName = "testUser";
+            var email = "test@example.com";
+            var password = "password";
+            var refreshToken = "refreshToken";
+            var token = "token";
+            var hashedPassword = _hasher.HashPassword( null, password );
+            var user = new User( Guid.NewGuid(), userName, email, hashedPassword );
+            _mockUnitOfWork.Setup( u => u.userRepository.GetAsync( user.Id ).Result ).Returns( user );
+            _mockUnitOfWork.Setup( u => u.userRepository.DeleteAsync( user ) ).Returns( Task.CompletedTask );
             // Act
-            await _userService.Delete( userId );
+            await _userService.Delete( user.Id );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.userRepository.DeleteUserAsync( userId ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.userRepository.DeleteAsync( user ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
         }
         [Test]
@@ -168,7 +192,7 @@ namespace Library.Application.Tests {
             var email2 = "test@example.com";
             var user2 = new User( Guid.NewGuid(), "testUser2", hashedPassword, email2 );
             var users = new List<User> { user, user2 };
-            _mockUnitOfWork.Setup( u => u.userRepository.GetUsersAsync( It.IsAny<int>(), It.IsAny<int>() ) ).ReturnsAsync( users );
+            _mockUnitOfWork.Setup( u => u.userRepository.GetManyAsync( It.IsAny<int>(), It.IsAny<int>() ) ).ReturnsAsync( users );
 
             // Act
             var result = await _userService.GetUsers( 0, 10 );
@@ -236,7 +260,7 @@ namespace Library.Application.Tests {
             await _userService.Update( userId, userName, email, password );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.userRepository.UpdateUser(
+            _mockUnitOfWork.Verify( u => u.userRepository.UpdateAsync(
                 It.Is<User>( u => u.Id == userId && u.UserName == userName
                 && u.Email == email && u.PasswordHash == passwordHash ) ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );

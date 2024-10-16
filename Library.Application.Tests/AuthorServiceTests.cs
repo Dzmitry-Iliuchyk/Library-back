@@ -2,13 +2,14 @@
 using FluentValidation.Results;
 using Library.Application.Exceptions;
 using Library.Application.Implementations;
-using Library.Application.Interfaces;
+using Library.Application.Interfaces.Repositories;
 using Library.Application.Validator;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using Moq;
 
-namespace Library.Application.Tests {
+namespace Library.Application.Tests
+{
     public class AuthorServiceTests {
         private Mock<IUnitOfWork> _mockUnitOfWork;
         private IValidator<Author> _validator;
@@ -25,13 +26,13 @@ namespace Library.Application.Tests {
         public async Task CreateAuthorAsync_ValidAuthor_CallsAddAuthorAsync() {
             // Arrange
             var author = new Author( Guid.NewGuid(), "Teodor", "Potter", new DateTime( 1999, 1, 1 ), "Belarus" );
-            _mockUnitOfWork.Setup( u => u.authorRepository.AddAuthorAsync( It.IsAny<Author>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.authorRepository.CreateAsync( It.IsAny<Author>() ) ).Returns( Task.CompletedTask );
 
             // Act
             await _authorService.CreateAuthorAsync( author.FirstName, author.LastName, author.Birthday, author.Country );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.authorRepository.AddAuthorAsync( It.Is<Author>( a => a.FirstName == "Teodor" && a.LastName == "Potter" ) ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.authorRepository.CreateAsync( It.Is<Author>( a => a.FirstName == "Teodor" && a.LastName == "Potter" ) ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
         }
         [Test]
@@ -49,14 +50,14 @@ namespace Library.Application.Tests {
             var author = new Author( authorId, "Teodor", "Potter", new DateTime( 1999, 1, 1 ), "Belarus" );
 
             
-            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorAsync( authorId ) ).Returns( Task.FromResult(author) );
-            _mockUnitOfWork.Setup( u => u.authorRepository.UpdateAuthorAsync( It.IsAny<Author>() ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorWithBooksAsync( authorId ) ).Returns( Task.FromResult(author) );
+            _mockUnitOfWork.Setup( u => u.authorRepository.UpdateAsync( It.IsAny<Author>() ) ).Returns( Task.CompletedTask );
 
             // Act
             await _authorService.UpdateAuthorAsync(author.Id, author.FirstName, author.LastName, author.Birthday, author.Country );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.authorRepository.UpdateAuthorAsync( It.Is<Author>( a => a.FirstName == "Teodor" && a.LastName == "Potter" ) ), Times.Once );
+            _mockUnitOfWork.Verify( u => u.authorRepository.UpdateAsync( It.Is<Author>( a => a.FirstName == "Teodor" && a.LastName == "Potter" ) ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
         }
         [Test]
@@ -64,13 +65,13 @@ namespace Library.Application.Tests {
             // Arrange
             var authorId = Guid.NewGuid();
             var author = new Author( authorId, "a", "a", new DateTime( 1900, 1, 1 ), "Be" );
-            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorAsync( authorId ) ).Returns( Task.FromResult( author ) );
+            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorWithBooksAsync( authorId ) ).Returns( Task.FromResult( author ) );
 
             // Act & Assert
             Assert.ThrowsAsync<ValidationException>( async () => await _authorService.UpdateAuthorAsync(author.Id, author.FirstName, author.LastName, author.Birthday, author.Country ) );
         }
         [Test]
-        public void DeleteAuthorAsync_AuthorHasBooks_ThrowsCannotDeleteAuthorWithBooksException() {
+        public async Task DeleteAuthorAsync_AuthorHasBooks_ShouldNotCallDeleteMethod() {
             // Arrange
             var authorId = Guid.NewGuid();
             var author = new Author( authorId, "Joanne", "Rowling", new DateTime( 1965, 7, 31 ), "England", new List<Book> { new FreeBook(Guid.NewGuid(), "Harry Potter and the Prisoner of Azkaban", "fantasy",
@@ -78,13 +79,13 @@ namespace Library.Application.Tests {
                 ISBN:   "0747542155", authorId )} );
                 
             
-            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorAsync( authorId ) ).ReturnsAsync( author );
+            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorWithBooksAsync( authorId ) ).ReturnsAsync( author );
+            _mockUnitOfWork.Setup( u => u.authorRepository.DeleteAsync( author ) ).Verifiable();
 
             // Act & Assert
  
-            var ex = Assert.ThrowsAsync<CannotDeleteAuthorWithBooksException>( () => _authorService.DeleteAuthorAsync( authorId ) );
-            Assert.That( ex.Message, Is.EqualTo( "Перед удалением автора необходимо удалить все его книги" ) );
-
+            await _authorService.DeleteAuthorAsync( authorId );
+            _mockUnitOfWork.Verify( u => u.authorRepository.DeleteAsync( author ), Times.Never );
         }
 
         [Test]
@@ -93,30 +94,16 @@ namespace Library.Application.Tests {
             var authorId = Guid.NewGuid();
             var author = new Author( authorId, "Joanne", "Rowling", new DateTime( 1965, 7, 31 ), "England" );
 
-            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorAsync( authorId ) ).ReturnsAsync( author );
-            _mockUnitOfWork.Setup( u => u.authorRepository.DeleteAuthorAsync( authorId ) ).Returns( Task.CompletedTask );
+            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorWithBooksAsync( authorId ) ).ReturnsAsync( author );
+            _mockUnitOfWork.Setup( u => u.authorRepository.DeleteAsync( author ) ).Returns( Task.CompletedTask );
 
             // Act
             await _authorService.DeleteAuthorAsync( authorId );
 
             // Assert
-            _mockUnitOfWork.Verify( u => u.CreateTransaction(), Times.Once );
-            _mockUnitOfWork.Verify( u => u.authorRepository.DeleteAuthorAsync( authorId ), Times.Once );
+
+            _mockUnitOfWork.Verify( u => u.authorRepository.DeleteAsync( author ), Times.Once );
             _mockUnitOfWork.Verify( u => u.Save(), Times.Once );
-            _mockUnitOfWork.Verify( u => u.Commit(), Times.Once );
-        }
-
-        [Test]
-        public void DeleteAuthorAsync_ExceptionOccurs_RollsBackTransaction() {
-            // Arrange
-            var authorId = Guid.NewGuid();
-            var author = new Author( authorId, "Joanne", "Rowling", new DateTime( 1965, 7, 31 ), "England");
-            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorAsync( authorId ) ).ReturnsAsync( author );
-            _mockUnitOfWork.Setup( u => u.authorRepository.DeleteAuthorAsync( authorId ) ).ThrowsAsync( new Exception() );
-
-            // Act & Assert
-            Assert.ThrowsAsync<Exception>( () => _authorService.DeleteAuthorAsync( authorId ) );
-            _mockUnitOfWork.Verify( u => u.Rollback(), Times.Once );
         }
 
         [Test]
@@ -124,7 +111,7 @@ namespace Library.Application.Tests {
             // Arrange
             var authorId = Guid.NewGuid();
             var authors = new List<Author> { new Author( authorId, "Joanne", "Rowling", new DateTime( 1965, 7, 31 ), "England" ) };
-            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorsAsync( It.IsAny<int>(), It.IsAny<int>() ) ).ReturnsAsync( authors );
+            _mockUnitOfWork.Setup( u => u.authorRepository.GetManyAsync( It.IsAny<int>(), It.IsAny<int>() ) ).ReturnsAsync( authors );
 
             // Act
             var result = await _authorService.GetAuthorsAsync( 0, 10 );
@@ -155,7 +142,7 @@ namespace Library.Application.Tests {
             // Arrange
             var authorId = Guid.NewGuid();
             var author = new Author( authorId, "Joanne", "Rowling", new DateTime( 1965, 7, 31 ), "England" );
-            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorAsync( authorId ) ).ReturnsAsync( author );
+            _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorWithBooksAsync( authorId ) ).ReturnsAsync( author );
 
             // Act
             var result = await _authorService.GetAuthorAsync( authorId );

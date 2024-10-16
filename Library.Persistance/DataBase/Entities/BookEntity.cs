@@ -2,8 +2,7 @@
 using Library.Domain.Models;
 
 namespace Library.DataAccess.DataBase.Entities {
-    public class BookEntity {
-        public Guid Id { get; set; }
+    public class BookEntity : DbEntity {
         public string ISBN { get; set; } = null!;
         public string Title { get; set; } = null!;
         public string Genre { get; set; } = null!;

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Library.Application.Auth.Enums;
-using Library.Application.Implementations;
 using Library.Application.Interfaces.Services;
-using Library.DataAccess.DataBase.Entities;
 using Library.Domain.Interfaces;
+using Library.Domain.Interfaces.UserUseCases;
+using Library.Domain.Interfaces.UserUseCases.DTO;
 using Library.Infrastracture;
 using Library.WebAPI.Contracts.Book;
 using Library.WebAPI.Contracts.User;
@@ -18,102 +18,128 @@ namespace Library.WebAPI.Controllers {
     public class UserController: ControllerBase {
         private const string ACCESS_TOKEN_KEY = "Auth-Cookies";
         private const string REFRESH_TOKEN_KEY = "Refresh";
-        private readonly IUserService _userService;
         private readonly IImageService _imageService;
         private readonly IMapper _mapper;
-        public UserController( IUserService userService, IImageService imageService, IMapper mapper ) {
-            _userService = userService;
+        private readonly IUpdateUserUseCase _updateUserUseCase;
+        private readonly IGetUserGroupsUseCase _getUserGroupsUseCase;
+        private readonly IGetUserByIdUseCase _getUserByIdUseCase;
+        private readonly IGetUserBooksUseCase _getUserBooksUseCase;
+        private readonly IGetUsersUseCase _getUsersUseCase;
+        private readonly IGetFilteredUserBooksUseCase _getFilteredserBooksUseCase;
+        private readonly IDeleteUserUseCase _deleteUserUseCase;
+        private readonly ILoginByRefreshUseCase _loginByRefreshUseCase;
+        private readonly ILoginUserUseCase _loginUserUseCase;
+        private readonly IRegisterUserUseCase _registerUserUseCase;
+        private readonly IGetUserWithBooksByIdUseCase _getUserWithBooksByIdUseCase;
+
+        public UserController(
+            IImageService imageService,
+            IMapper mapper,
+            IUpdateUserUseCase updateUserUseCase,
+            IGetUserGroupsUseCase getUserGroupsUseCase,
+            IGetUserByIdUseCase getUserByIdUseCase,
+            IGetUserBooksUseCase getUserBooksUseCase,
+            IGetUsersUseCase getUsersUseCase,
+            IGetFilteredUserBooksUseCase getFilteredserBooksUseCase,
+            IDeleteUserUseCase deleteUserUseCase,
+            ILoginByRefreshUseCase loginByRefreshUseCase,
+            ILoginUserUseCase loginUserUseCase,
+            IRegisterUserUseCase registerUserUseCase,
+            IGetUserWithBooksByIdUseCase getUserWithBooksByIdUseCase) {
+            _getUserWithBooksByIdUseCase = getUserWithBooksByIdUseCase;
+            _deleteUserUseCase = deleteUserUseCase;
+            _getFilteredserBooksUseCase = getFilteredserBooksUseCase;
+            _getUserBooksUseCase = getUserBooksUseCase;
+            _getUserByIdUseCase = getUserByIdUseCase;
+            _getUserGroupsUseCase = getUserGroupsUseCase;
+            _getUsersUseCase = getUsersUseCase;
+            _loginByRefreshUseCase = loginByRefreshUseCase;
+            _loginUserUseCase = loginUserUseCase;
+            _registerUserUseCase = registerUserUseCase;
+            _updateUserUseCase = updateUserUseCase;
+        
             _imageService = imageService;
             _mapper = mapper;
         }
-        [Authorize(Policy = CustomPolicyNames.Admin)]
+        [Authorize( Policy = CustomPolicyNames.Admin )]
         [HttpGet( "[action]" )]
         public async Task<IResult> GetUsers( int skip, int take ) {
-            var users = await _userService.GetUsers( skip, take);
+            var users = await _getUsersUseCase.Execute( skip, take );
             return Results.Ok( users );
         }
         [Authorize]
         [HttpGet( "[action]" )]
-        public async Task<IResult> Get( ) {
+        public async Task<IResult> Get() {
             var userId = Guid.Parse( HttpContext.User.Claims.First( x => x.Type == CustumClaimTypes.UserId ).Value );
-            var user = await _userService.Get( userId );
-            var isAdmin = ( await _userService.GetGroups( user.Id ) ).Contains( AccessGroupEnum.Admin.ToString() );
-            return Results.Ok( new UserResponce( user.Id.ToString(), user.UserName, user.Email, isAdmin ) );
+            var user = await _getUserByIdUseCase.Execute(userId);
+            return Results.Ok( user );
         }
-        [Authorize(Policy = CustomPolicyNames.Admin)]
+        [Authorize( Policy = CustomPolicyNames.Admin )]
         [HttpGet( "{userId}/[action]" )]
         public async Task<IResult> GetUserWithBooks( [FromRoute] Guid userId, int skip, int take ) {
-            var user = await _userService.Get( userId );
-            var isAdmin = ( await _userService.GetGroups( user.Id ) ).Contains( AccessGroupEnum.Admin.ToString() );
-            var books = await _userService.GetBooks(userId,skip, take ); 
-            return Results.Ok( new UserWithBooksResponce( user.Id.ToString(), user.UserName, user.Email, isAdmin , books.ToArray()) );
+            var user = await _getUserWithBooksByIdUseCase.Execute(userId, skip, take);
+            return Results.Ok( user );
         }
         [Authorize]
         [HttpGet( "[action]" )]
-        public async Task<IResult> GetBooks(  int skip, int take ) {
+        public async Task<IResult> GetBooks( int skip, int take ) {
             var userId = Guid.Parse( HttpContext.User.Claims.First( x => x.Type == CustumClaimTypes.UserId ).Value );
-            var books = await _userService.GetBooks( userId, skip, take );
+            var books = await _getUserBooksUseCase.Execute(userId, skip, take);
             return Results.Ok( books );
         }
         [Authorize]
         [HttpPost( "[action]" )]
         public async Task<IResult> GetFilteredBooks( BooksRequest request ) {
             var userId = Guid.Parse( HttpContext.User.Claims.First( x => x.Type == CustumClaimTypes.UserId ).Value );
-            var (books, booksCount) = await _userService.GetFilteredBooksAsync( request.skip, request.take, request.authorFilter, request.titleFilter, userId );
-            IList<BookResponce> booksResponces = _mapper.Map<IList<BookResponce>>( books );
-            foreach (var item in booksResponces) {
-                item.Image = await _imageService.GetImageAsBase64( item.Id );
-            }
-            BooksResponseWithCount response = new BooksResponseWithCount() {
-                Books = booksResponces,
-                Count = booksCount
-            };
-            return Results.Ok( response );
+            var books = await _getFilteredserBooksUseCase.Execute(request.skip, request.take, request.authorFilter, request.titleFilter, userId);
+            return Results.Ok( books );
         }
         [AllowAnonymous]
         [HttpPost( "[action]" )]
         public async Task<IResult> Register( RegisterUserRequest request ) {
-            var (token, refreshToken) = await _userService.Register( request.UserName, request.Email, request.Password );
-     
-            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, token );
-            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, refreshToken );
+            var result = await _registerUserUseCase.Execute( _mapper.Map<RegisterModel>(request) );
+
+            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, result.accessToken );
+            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, result.refreshToken );
             return Results.Ok();
         }
         [AllowAnonymous]
         [HttpPost( "[action]" )]
         public async Task<IResult> Login( LoginUserRequest request ) {
-            var (token, refreshToken) = await _userService.Login( request.Email, request.Password );
-
-            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, token );
-            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, refreshToken );
-            return Results.Ok( );
+            var result = await _loginUserUseCase.Execute( _mapper.Map<LoginModel>(request) );
+            
+            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, result.accessToken );
+            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, result.refreshToken );
+            return Results.Ok();
         }
         [HttpPost( "[action]" )]
-        public IResult Logout( ) {
+        public IResult Logout() {
             base.Response.Cookies.Delete( ACCESS_TOKEN_KEY );
             base.Response.Cookies.Delete( REFRESH_TOKEN_KEY );
-            return Results.Ok( );
+            return Results.Ok();
         }
         [AllowAnonymous]
         [HttpPost( "[action]" )]
-        public async Task<IResult> LoginByRefresh( ) {
+        public async Task<IResult> LoginByRefresh() {
             var accessToken = base.Request.Cookies[ ACCESS_TOKEN_KEY ]?.ToString();
             var refresh = base.Request.Cookies[ REFRESH_TOKEN_KEY ]?.ToString();
-            var (token, refreshToken) = await _userService.LoginByRefresh( accessToken, refresh );
-            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, token );
-            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, refreshToken );
+
+            var result = await _loginByRefreshUseCase.Execute( accessToken, refresh );
+
+            base.Response.Cookies.Append( ACCESS_TOKEN_KEY, result.accessToken );
+            base.Response.Cookies.Append( REFRESH_TOKEN_KEY, result.refreshToken );
             return Results.Ok();
         }
-        [Authorize(Policy = CustomPolicyNames.Admin)]
+        [Authorize( Policy = CustomPolicyNames.Admin )]
         [HttpPut( "[action]" )]
         public async Task<IResult> Update( UpdateUserRequest request ) {
-            await _userService.Update( request.UserId, request.UserName, request.Email, request.Password );
+            await _updateUserUseCase.Execute( _mapper.Map<UserDto>(request) );
             return Results.Ok();
         }
-        [Authorize(Policy = CustomPolicyNames.Admin)]
+        [Authorize( Policy = CustomPolicyNames.Admin )]
         [HttpDelete( "{userId}/[action]" )]
-        public async Task<IResult> Delete( Guid userId) {
-            await _userService.Delete( userId );
+        public async Task<IResult> Delete( Guid userId ) {
+            await _deleteUserUseCase.Execute( userId );
             return Results.Ok();
         }
 

@@ -1,10 +1,12 @@
 using FluentValidation;
+using Library.Application;
 using Library.Application.Auth.Enums;
 using Library.Application.Auth.Interfaces;
 using Library.Application.Helpers;
 using Library.Application.Implementations;
 using Library.Application.Interfaces.Repositories;
 using Library.Application.Interfaces.Services;
+using Library.Application.Mapper;
 using Library.Application.Validator;
 using Library.DataAccess.AutoMapper;
 using Library.DataAccess.DataBase.Contexts;
@@ -63,6 +65,7 @@ builder.Services.AddScoped<IValidator<Author>, AuthorValidator>();
 builder.Services.AddScoped<IValidator<Book>, BookValidator>();
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddUseCases();
 
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, GroupAuthorizationHandler>();
@@ -105,7 +108,7 @@ builder.Services.AddCors( options => {
                               .AllowAnyHeader()
                               .AllowAnyMethod());
 } );
-builder.Services.AddAutoMapper( typeof( DataBaseMappings ), typeof(BookResponceProfile) );
+builder.Services.AddAutoMapper( typeof( DataBaseMappings ), typeof(WebApiMappings), typeof(DTOMapping) );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

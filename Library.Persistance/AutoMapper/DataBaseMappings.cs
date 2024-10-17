@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Library.DataAccess.DataBase.Entities;
 using Library.DataAccess.DataBase.Enums;
+using Library.Domain.Interfaces.UserUseCases.DTO;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using System.Security.AccessControl;
@@ -8,8 +9,13 @@ using System.Security.AccessControl;
 namespace Library.DataAccess.AutoMapper {
     public class DataBaseMappings: Profile {
         public DataBaseMappings() {
-            CreateMap<UserEntity, User>().ReverseMap();
+            CreateMap<User, UserEntity>();
+            CreateMap<UserEntity, User>()
+                .ConvertUsing<UserEntityToUserConverter>();
+
             CreateMap<AuthorEntity, Author>().ReverseMap();
+            CreateMap<AuthorEntity, Author>()
+                .ConvertUsing<AuthorEntityToAuthorConverter>();
             CreateMap<BookEntity, Book>()
        .ConvertUsing<BookEntityToBookConverter>();
             CreateMap<Book, BookEntity>()

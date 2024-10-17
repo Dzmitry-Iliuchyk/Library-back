@@ -1,4 +1,4 @@
-﻿namespace Library.WebAPI.Contracts.Book {
+﻿namespace Library.Domain.Interfaces.BookUseCases.Dto {
     public class BookResponce {
         public Guid Id { get; set; }
         public string ISBN { get; set; }

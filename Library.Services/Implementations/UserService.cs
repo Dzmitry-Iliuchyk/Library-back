@@ -1,16 +1,13 @@
 ﻿using FluentValidation;
-using Library.Application.Auth.Enums;
 using Library.Application.Auth.Interfaces;
 using Library.Application.Exceptions;
-using Library.Application.Helpers;
 using Library.Application.Interfaces.Repositories;
 using Library.Domain.Interfaces;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using Microsoft.AspNetCore.Identity;
 
-namespace Library.Application.Implementations
-{
+namespace Library.Application.Implementations {
     public class UserService: IUserService {
         private readonly IUnitOfWork _unit;
         private readonly IValidator<User> _validator;
@@ -24,12 +21,12 @@ namespace Library.Application.Implementations
             this._tokenService = tokenService;
         }
 
- 
+
         /// <returns>First parameter is AccessToken, second is RefreshToken</returns>
         public async Task<(string, string)> Register( string userName, string email, string password ) {
             try {
                 _unit.CreateTransaction();
-                var user = new User( id:Guid.NewGuid(),
+                var user = new User( id: Guid.NewGuid(),
                     userName: userName,
                     email: email,
                     passwordHash: _hasher.HashPassword( null, password ) );
@@ -40,16 +37,16 @@ namespace Library.Application.Implementations
                 await _unit.Save();
                 var token = _tokenService.GenerateToken( user );
                 var refreshToken = _tokenService.GenerateRefreshToken();
-                await _unit.authRepository.SaveRefreshToken(userId: user.Id, refreshToken);
+                await _unit.authRepository.SaveRefreshToken( userId: user.Id, refreshToken );
                 await _unit.Save();
                 _unit.Commit();
-                return (token, refreshToken); 
+                return (token, refreshToken);
             }
             catch (Exception) {
                 _unit.Rollback();
                 throw;
             }
-            
+
         }
         /// <returns>First parameter is AccessToken, second is RefreshToken</returns>
         public async Task<(string, string)> Login( string email, string password ) {
@@ -58,7 +55,7 @@ namespace Library.Application.Implementations
             var result = _hasher.VerifyHashedPassword( null, user.PasswordHash, password );
 
             if (result == PasswordVerificationResult.Failed) {
-                throw new InvalidPasswordException("Пароль не подходит!");
+                throw new InvalidPasswordException( "Пароль не подходит!" );
             }
             var token = _tokenService.GenerateToken( user );
             await _unit.authRepository.RemoveAllRefreshTokens( userId: user.Id );
@@ -70,12 +67,11 @@ namespace Library.Application.Implementations
         }
         /// <returns>First parameter is AccessToken, second is RefreshToken</returns>
         public async Task<(string, string)> LoginByRefresh( string accessToken, string refreshToken ) {
-            var userId = _tokenService.GetUserIdFromExpiredToken(accessToken);
+            var userId = _tokenService.GetUserIdFromExpiredToken( accessToken );
             var user = await _unit.userRepository.GetAsync( userId );
-            var refreshTokeninDb = await _unit.authRepository.GetLastRefreshToken(userId);
-            if (refreshTokeninDb.ExpiryDate<DateTime.UtcNow && refreshTokeninDb.Token!=refreshToken)
-            {
-                throw new InvalidTokenException("Неверный токен!");
+            var refreshTokeninDb = await _unit.authRepository.GetLastRefreshToken( userId );
+            if (refreshTokeninDb.ExpiryDate < DateTime.UtcNow && refreshTokeninDb.Token != refreshToken) {
+                throw new InvalidTokenException( "Неверный токен!" );
             }
             var token = _tokenService.GenerateToken( user );
 
@@ -102,32 +98,26 @@ namespace Library.Application.Implementations
             return await _unit.userRepository.GetAsync( id );
         }
         public async Task<List<string>> GetGroups( Guid id ) {
-            var groups =  await _unit.authRepository.GetUserGroups( id );
-            return groups.Select(x=> x.ToString()).ToList();
+            var groups = await _unit.authRepository.GetUserGroups( id );
+            return groups.Select( x => x.ToString() ).ToList();
         }
 
         public async Task Update( Guid userId, string userName, string email, string password ) {
-            try {
-                _unit.CreateTransaction();
-                var userInDb = await _unit.userRepository.GetAsync( userId );
-                var result = _hasher.VerifyHashedPassword( null, userInDb.PasswordHash, password );
 
-                if (result == PasswordVerificationResult.Failed) {
-                    throw new InvalidPasswordException( "Пароль не подходит!" );
-                }
-                var user = new User(id: userId,
-                    userName: userName,
-                    email: email,
-                    passwordHash: userInDb.PasswordHash );
-                _validator.ValidateAndThrow( user );
-                await _unit.userRepository.UpdateAsync( user );
-                await _unit.Save();
-                _unit.Commit();
+            var userInDb = await _unit.userRepository.GetAsync( userId );
+            var result = _hasher.VerifyHashedPassword( null, userInDb.PasswordHash, password );
+
+            if (result == PasswordVerificationResult.Failed) {
+                throw new InvalidPasswordException( "Пароль не подходит!" );
             }
-            catch (Exception) {
-                _unit.Rollback();
-                throw;
-            }
+            var user = new User( id: userId,
+                userName: userName,
+                email: email,
+                passwordHash: userInDb.PasswordHash );
+            _validator.ValidateAndThrow( user );
+            await _unit.userRepository.UpdateAsync( user );
+            await _unit.Save();
+
         }
 
     }

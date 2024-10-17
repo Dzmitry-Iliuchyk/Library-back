@@ -58,7 +58,7 @@ namespace Library.Application.Implementations
             return await _unit.authorRepository.GetBooksByAuthorAsync( authorId, skip, take );
         }
 
-        public async Task<Author> GetAuthorAsync( Guid authorId ) {
+        public async Task<Author> GetAuthorWithBooksAsync( Guid authorId ) {
             return await _unit.authorRepository.GetAuthorWithBooksAsync( authorId );
         }
     }

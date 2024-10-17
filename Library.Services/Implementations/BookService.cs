@@ -4,8 +4,7 @@ using Library.Application.Interfaces.Services;
 using Library.Domain.Interfaces;
 using Library.Domain.Models.Book;
 
-namespace Library.Application.Implementations
-{
+namespace Library.Application.Implementations {
     public class BookService: IBookService {
         private readonly IUnitOfWork _unit;
         private readonly IImageService _imageService;
@@ -30,53 +29,41 @@ namespace Library.Application.Implementations
         }
 
         public async Task UpdateBookAsync( Guid bookId, string ISBN, string title, string genre, string description, Guid authorId ) {
-            try {
-                _unit.CreateTransaction();
-                Book updatedBook;
-                var bookInDb = await _unit.bookRepository.GetBookWithAuthorAsync( bookId );
-                if (bookInDb is TakenBook taken) {
-                    updatedBook = new TakenBook(
-                        id: bookId,
-                        client_id: taken.ClientId,
-                        ISBN: ISBN,
-                        title: title,
-                        genre: genre,
-                        description: description,
-                        authorId: authorId,
-                        takenAt: taken.TakenAt,
-                        returnTo: taken.ReturnTo );
-                } else
-                    updatedBook = new FreeBook(
-                        id: bookId,
-                        ISBN: ISBN,
-                        title: title,
-                        genre: genre,
-                        description: description,
-                        authorId: authorId );
-                _validator.ValidateAndThrow( updatedBook );
-                await _unit.bookRepository.UpdateAsync( updatedBook );
-                await _unit.Save();
-                _unit.Commit();
-            }
-            catch (Exception) {
-                _unit.Rollback();
-                throw;
-            }
+
+            Book updatedBook;
+            var bookInDb = await _unit.bookRepository.GetBookWithAuthorAsync( bookId );
+            if (bookInDb is TakenBook taken) {
+                updatedBook = new TakenBook(
+                    id: bookId,
+                    client_id: taken.ClientId,
+                    ISBN: ISBN,
+                    title: title,
+                    genre: genre,
+                    description: description,
+                    authorId: authorId,
+                    takenAt: taken.TakenAt,
+                    returnTo: taken.ReturnTo );
+            } else
+                updatedBook = new FreeBook(
+                    id: bookId,
+                    ISBN: ISBN,
+                    title: title,
+                    genre: genre,
+                    description: description,
+                    authorId: authorId );
+            _validator.ValidateAndThrow( updatedBook );
+            await _unit.bookRepository.UpdateAsync( updatedBook );
+            await _unit.Save();
+
         }
 
         public async Task DeleteBookAsync( Guid bookId ) {
-            try {
-                _unit.CreateTransaction();
-                var book = await _unit.bookRepository.GetAsync( bookId );
-                await _unit.bookRepository.DeleteAsync( book );
-                _imageService.DeleteImage( bookId );
-                await _unit.Save();
-                _unit.Commit();
-            }
-            catch (Exception) {
-                _unit.Rollback();
-                throw;
-            }
+            _unit.CreateTransaction();
+            var book = await _unit.bookRepository.GetAsync( bookId );
+            await _unit.bookRepository.DeleteAsync( book );
+            _imageService.DeleteImage( bookId );
+            await _unit.Save();
+
         }
 
         public async Task FreeBookAsync( Guid bookId, Guid clientId ) {

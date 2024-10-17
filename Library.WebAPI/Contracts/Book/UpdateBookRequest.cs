@@ -8,5 +8,5 @@ namespace Library.WebAPI.Contracts.Book {
         string Genre,
         string Description,
         Guid AuthorId ,
-        IFormFile? image);
+        IFormFile? Image);
 }

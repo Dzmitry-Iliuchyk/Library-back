@@ -145,7 +145,7 @@ namespace Library.Application.Tests
             _mockUnitOfWork.Setup( u => u.authorRepository.GetAuthorWithBooksAsync( authorId ) ).ReturnsAsync( author );
 
             // Act
-            var result = await _authorService.GetAuthorAsync( authorId );
+            var result = await _authorService.GetAuthorWithBooksAsync( authorId );
 
             // Assert
             Assert.That( result, Is.EqualTo( author ) );

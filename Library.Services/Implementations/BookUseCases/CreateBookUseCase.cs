@@ -29,7 +29,7 @@ namespace Library.Application.Implementations.BookUseCases {
             if (createBookDto.image != null) {
 
                 using (var stream = createBookDto.image.OpenReadStream()) {
-                    await _imageService.SaveImage( stream, book.Id );
+                    await _imageService.SaveImage( stream, book.Id, createBookDto.image.ContentType.Split( "/" )[1] );
                 }
             }
             _validator.ValidateAndThrow( book );

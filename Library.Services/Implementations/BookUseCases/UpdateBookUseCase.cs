@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Library.Application.Interfaces.Repositories;
+using Library.Application.Interfaces.Services;
 using Library.Domain.Interfaces.BookUseCases;
 using Library.Domain.Interfaces.BookUseCases.Dto;
 using Library.Domain.Models.Book;
@@ -9,10 +10,12 @@ namespace Library.Application.Implementations.BookUseCases {
     public class UpdateBookUseCase: IUpdateBookUseCase {
         private readonly IUnitOfWork _unit;
         private readonly IValidator<Book> _validator;
+        private readonly IImageService _image;
 
-        public UpdateBookUseCase( IUnitOfWork unit, IValidator<Book> validator ) {
+        public UpdateBookUseCase( IUnitOfWork unit, IValidator<Book> validator, IImageService image ) {
             _unit = unit;
             _validator = validator;
+            _image = image; 
         }
 
         public async Task Execute( BookUpdateDto bookInputDto  ) {
@@ -41,6 +44,11 @@ namespace Library.Application.Implementations.BookUseCases {
             _validator.ValidateAndThrow( updatedBook );
             await _unit.bookRepository.UpdateAsync( updatedBook );
             await _unit.Save();
+            if (bookInputDto.Image !=null) {
+                using (var stream = bookInputDto.Image.OpenReadStream()) {
+                    _image.SaveImage( stream, bookInputDto.BookId, bookInputDto.Image.ContentType.Split( "/" )[ 1 ] );
+                }
+            }
         }
     }
 }

@@ -115,7 +115,8 @@ namespace Library.WebAPI.Controllers {
         [HttpPost( "[action]" )]
         public async Task<IResult> AttachImage( Guid bookId, IFormFile img ) {
             using (var stream = img.OpenReadStream()) {
-                await _imageService.SaveImage( stream, bookId );
+                
+                await _imageService.SaveImage( stream, bookId, img.ContentType.Split( "/" )?[1] );
             }
             return Results.Ok();
         }

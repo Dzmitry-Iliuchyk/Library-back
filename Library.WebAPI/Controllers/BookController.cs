@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
-using Library.Application.Implementations.BookUseCases;
 using Library.Application.Interfaces.Services;
-using Library.Domain.Interfaces;
-using Library.Domain.Interfaces.BookUseCases;
-using Library.Domain.Interfaces.BookUseCases.Dto;
+using Library.Application.Interfaces.BookUseCases;
+using Library.Application.Interfaces.BookUseCases.Dto;
 using Library.Infrastracture;
 using Library.WebAPI.Contracts.Book;
 using Microsoft.AspNetCore.Authorization;

@@ -6,6 +6,7 @@ using Library.DataAccess.Exceptions;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Library.DataAccess.Repository
 {
@@ -77,6 +78,10 @@ namespace Library.DataAccess.Repository
 
         protected override IList<Book> MapToDomainEntities( IList<BookEntity> dbEntities ) {
             return _mapper.Map<IList<Book>>( dbEntities );
+        }
+
+        public async Task<bool> Exist( string isbn ) {
+            return await _dbSet.AsNoTracking().AnyAsync( x => x.ISBN == isbn );
         }
     }
 }

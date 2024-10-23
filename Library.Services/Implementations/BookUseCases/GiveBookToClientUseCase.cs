@@ -1,7 +1,8 @@
 ﻿using FluentValidation;
 using Library.Application.Interfaces.Repositories;
-using Library.Domain.Interfaces.BookUseCases;
+using Library.Application.Interfaces.BookUseCases;
 using Library.Domain.Models.Book;
+using Library.Application.Exceptions;
 
 namespace Library.Application.Implementations.BookUseCases {
     public class GiveBookToClientUseCase: IGiveBookToClientUseCase {
@@ -21,6 +22,8 @@ namespace Library.Application.Implementations.BookUseCases {
                 _validator.ValidateAndThrow( takenBook );
                 await _unit.bookRepository.UpdateAsync( takenBook );
                 await _unit.Save();
+            } else {
+                throw new BadRequestException($"Не удалось взять книгу (ISBN:{book.ISBN})!");
             }
         }
     }

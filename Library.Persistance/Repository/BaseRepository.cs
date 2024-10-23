@@ -2,6 +2,7 @@
 using Library.DataAccess.DataBase.Entities;
 using Library.Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Library.DataAccess.Repository
 {
@@ -19,9 +20,7 @@ namespace Library.DataAccess.Repository
 
         public virtual async Task CreateAsync( TDomainEntity entity ) {
             var dbEntity = MapToDBEntity( entity );
-            if (!( await _dbSet.AnyAsync( x => x.Id == dbEntity.Id ) )) {
-                await _dbSet.AddAsync( dbEntity );
-            }
+            await _dbSet.AddAsync( dbEntity );
         }
 
         public virtual async Task DeleteAsync( TDomainEntity entity ) {
@@ -54,9 +53,10 @@ namespace Library.DataAccess.Repository
 
         public virtual async Task UpdateAsync( TDomainEntity entity ) {
             var dbEntity = MapToDBEntity( entity );
-            if (await _dbSet.AnyAsync( x => x.Id == dbEntity.Id )) {
-                _dbSet.Update( dbEntity );
-            }
+            _dbSet.Update( dbEntity );
+        }
+        public virtual async Task<bool> Exist(Guid id) {
+            return await _dbSet.AsNoTracking().AnyAsync( x=>x.Id == id );
         }
     }
 }

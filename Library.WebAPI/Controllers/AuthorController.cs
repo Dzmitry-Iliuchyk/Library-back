@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-using Library.Application.Implementations.AuthorUseCases;
-using Library.Domain.Interfaces;
-using Library.Domain.Interfaces.AuthorUseCases;
-using Library.Domain.Interfaces.AuthorUseCases.Dto;
+using Library.Application.Interfaces.AuthorUseCases;
+using Library.Application.Interfaces.AuthorUseCases.Dto;
 using Library.Infrastracture;
 using Library.WebAPI.Contracts.Authors;
 using Microsoft.AspNetCore.Authorization;

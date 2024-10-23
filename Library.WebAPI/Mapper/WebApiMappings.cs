@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Library.WebAPI.Contracts.Book;
-using Library.Domain.Interfaces.BookUseCases.Dto;
+using Library.Application.Interfaces.BookUseCases.Dto;
 using Library.WebAPI.Contracts.Authors;
-using Library.Domain.Interfaces.AuthorUseCases.Dto;
-using Library.Domain.Interfaces.UserUseCases.DTO;
+using Library.Application.Interfaces.AuthorUseCases.Dto;
+using Library.Application.Interfaces.UserUseCases.DTO;
 using Library.WebAPI.Contracts.User;
 
 namespace Library.WebAPI.Mapper {

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Library.Application.Interfaces.Repositories;
 using Library.Application.Interfaces.Services;
-using Library.Domain.Interfaces.BookUseCases;
-using Library.Domain.Interfaces.BookUseCases.Dto;
+using Library.Application.Interfaces.BookUseCases;
+using Library.Application.Interfaces.BookUseCases.Dto;
 using Library.Domain.Models.Book;
 
 namespace Library.Application.Implementations.BookUseCases

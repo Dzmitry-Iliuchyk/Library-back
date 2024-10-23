@@ -7,6 +7,7 @@
         Task CreateAsync(TDomainEntity entity);
         Task UpdateAsync(TDomainEntity entity);
         Task DeleteAsync(TDomainEntity entity);
+        Task<bool> Exist( Guid id );
     }
 
 }

@@ -1,5 +1,5 @@
 ﻿using Library.Application.Interfaces.Repositories;
-using Library.Domain.Interfaces.UserUseCases;
+using Library.Application.Interfaces.UserUseCases;
 
 namespace Library.Application.Implementations.UserUseCases {
     public class GetUserGroupsUseCase: IGetUserGroupsUseCase {

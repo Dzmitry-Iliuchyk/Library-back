@@ -1,15 +1,9 @@
 ﻿using AutoMapper;
 using Library.Application.Interfaces.Repositories;
 using Library.Application.Interfaces.Services;
-using Library.Domain.Interfaces.BookUseCases.Dto;
-using Library.Domain.Interfaces.UserUseCases;
-using Library.Domain.Interfaces.UserUseCases.DTO;
-using Library.Domain.Models.Book;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Library.Application.Interfaces.BookUseCases.Dto;
+using Library.Application.Interfaces.UserUseCases;
+using Library.Application.Interfaces.UserUseCases.DTO;
 
 namespace Library.Application.Implementations.UserUseCases {
 

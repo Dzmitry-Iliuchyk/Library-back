@@ -1,6 +1,7 @@
 ﻿using Library.Application.Interfaces.Repositories;
-using Library.Domain.Interfaces.BookUseCases;
+using Library.Application.Interfaces.BookUseCases;
 using Library.Domain.Models.Book;
+using Library.Application.Exceptions;
 
 namespace Library.Application.Implementations.BookUseCases {
     public class FreeBookUseCase: IFreeBookUseCase {
@@ -15,6 +16,8 @@ namespace Library.Application.Implementations.BookUseCases {
                 var freeBook = new FreeBook( book );
                 await _unit.bookRepository.UpdateAsync( freeBook );
                 await _unit.Save();
+            } else {
+                throw new BadRequestException($"Не удалось освободить книгу(ISBN:{book.ISBN}) ");
             }
         }
     }

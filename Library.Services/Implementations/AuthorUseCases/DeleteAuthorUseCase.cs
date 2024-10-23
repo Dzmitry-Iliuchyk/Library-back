@@ -1,5 +1,6 @@
 ﻿using Library.Application.Interfaces.Repositories;
-using Library.Domain.Interfaces.AuthorUseCases;
+using Library.Application.Interfaces.AuthorUseCases;
+using Library.Application.Exceptions;
 
 namespace Library.Application.Implementations.AuthorUseCases {
     public class DeleteAuthorUseCase: IDeleteAuthorUseCase {
@@ -11,8 +12,11 @@ namespace Library.Application.Implementations.AuthorUseCases {
 
         public async Task Execute( Guid authorId ) {
             var authorToDelete = await _unit.authorRepository.GetAuthorWithBooksAsync( authorId );
+            if (authorToDelete != null) {
+                throw new NotFoundException("Нет такого автора" );
+            }
             if (authorToDelete.Books != null && authorToDelete.Books.Any()) {
-                return;
+                throw new CannotDeleteAuthorWithBooksException( $"Невозможно удалить автора {authorToDelete.FirstName} {authorToDelete.LastName} пока у него есть книги"  );
             }
             await _unit.authorRepository.DeleteAsync( authorToDelete );
             await _unit.Save();

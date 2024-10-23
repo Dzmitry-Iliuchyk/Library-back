@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using Library.Domain.Interfaces.AuthorUseCases.Dto;
-using Library.Domain.Interfaces.BookUseCases.Dto;
-using Library.Domain.Interfaces.UserUseCases.DTO;
+using Library.Application.Interfaces.AuthorUseCases.Dto;
+using Library.Application.Interfaces.BookUseCases.Dto;
+using Library.Application.Interfaces.UserUseCases.DTO;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
 
@@ -11,6 +11,8 @@ namespace Library.Application.Mapper {
             CreateMap<Book, BookDto>().Include<FreeBook, FreeBookDto>().Include<TakenBook, TakenBookDto>();
             CreateMap<FreeBook, FreeBookDto>();
             CreateMap<TakenBook, TakenBookDto>();
+            CreateMap<BookCreateDto, FreeBook>()
+                .ConstructUsing(src=> new FreeBook( Guid.NewGuid(),src.title,src.genre,src.description,src.ISBN,src.authorId, null));
             CreateMap<Author, AuthorDto>()
                 .ConstructUsing(src=>new AuthorDto(src.Id, src.FirstName, src.LastName, src.Birthday, src.Country));
             CreateMap<Author, AuthorWithBooksDTO>()

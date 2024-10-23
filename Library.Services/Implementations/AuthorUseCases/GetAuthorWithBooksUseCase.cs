@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Library.Application.Interfaces.Repositories;
-using Library.Domain.Interfaces.AuthorUseCases;
-using Library.Domain.Interfaces.AuthorUseCases.Dto;
+using Library.Application.Interfaces.AuthorUseCases;
+using Library.Application.Interfaces.AuthorUseCases.Dto;
 using Library.Domain.Models;
 
 namespace Library.Application.Implementations.AuthorUseCases {

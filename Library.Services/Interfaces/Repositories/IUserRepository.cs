@@ -13,6 +13,8 @@ namespace Library.Application.Interfaces.Repositories
         Task UpdateAsync(User user);
         Task DeleteAsync(User user);
         Task<(IList<TakenBook>, int)> GetFilteredBooksAsync(int skip, int take, string? authorFilter, string? titleFilter, Guid userId);
-    }
+        Task<bool> Exist( Guid id );
+        Task<bool> Exist( string username );
+        }
 
 }

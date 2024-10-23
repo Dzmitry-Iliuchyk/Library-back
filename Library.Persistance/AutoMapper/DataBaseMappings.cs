@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using Library.DataAccess.DataBase.Entities;
 using Library.DataAccess.DataBase.Enums;
-using Library.Domain.Interfaces.UserUseCases.DTO;
 using Library.Domain.Models;
 using Library.Domain.Models.Book;
-using System.Security.AccessControl;
 
 namespace Library.DataAccess.AutoMapper {
     public class DataBaseMappings: Profile {

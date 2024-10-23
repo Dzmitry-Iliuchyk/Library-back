@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 using Library.Application.Auth.Interfaces;
+using Library.Application.Exceptions;
 using Library.Application.Interfaces.Repositories;
-using Library.Domain.Interfaces.BookUseCases;
-using Library.Domain.Interfaces.UserUseCases;
-using Library.Domain.Interfaces.UserUseCases.DTO;
+using Library.Application.Interfaces.UserUseCases;
+using Library.Application.Interfaces.UserUseCases.DTO;
 using Library.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 
@@ -33,6 +33,9 @@ namespace Library.Application.Implementations.UserUseCases
                     passwordHash: _hasher.HashPassword( null, registerModel.Password )
                 );
                 _validator.ValidateAndThrow( user );
+                if (await _unit.userRepository.Exist(user.UserName)) {
+                    throw new AlreadyExistsException("User with the same name already exist");
+                }
                 await _unit.userRepository.CreateAsync( user );
                 await _unit.Save();
                 await _unit.authRepository.AddUserToGroup( user.Id, Auth.Enums.AccessGroupEnum.User );

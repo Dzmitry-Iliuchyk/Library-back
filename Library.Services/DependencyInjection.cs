@@ -1,9 +1,11 @@
-﻿using Library.Application.Implementations.AuthorUseCases;
+﻿
+using Library.Application.Implementations.AuthorUseCases;
 using Library.Application.Implementations.BookUseCases;
 using Library.Application.Implementations.UserUseCases;
-using Library.Domain.Interfaces.AuthorUseCases;
-using Library.Domain.Interfaces.BookUseCases;
-using Library.Domain.Interfaces.UserUseCases;
+using Library.Application.Interfaces.AuthorUseCases;
+using Library.Application.Interfaces.BookUseCases;
+using Library.Application.Interfaces.UserUseCases;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Library.Application {

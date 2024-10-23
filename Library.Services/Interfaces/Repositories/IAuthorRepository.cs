@@ -16,5 +16,6 @@ namespace Library.Application.Interfaces.Repositories
         Task UpdateAsync(Author changedAuthor);
         Task DeleteAsync(Author author);
         Task<IList<Book>> GetBooksByAuthorAsync(Guid authorId, int skip, int take);
-    }
+        Task<bool> Exist( Guid id );
+        }
 }

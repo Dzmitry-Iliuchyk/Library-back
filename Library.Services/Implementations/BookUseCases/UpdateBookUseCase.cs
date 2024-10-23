@@ -1,12 +1,13 @@
 ﻿using FluentValidation;
 using Library.Application.Interfaces.Repositories;
 using Library.Application.Interfaces.Services;
-using Library.Domain.Interfaces.BookUseCases;
-using Library.Domain.Interfaces.BookUseCases.Dto;
+using Library.Application.Interfaces.BookUseCases;
+using Library.Application.Interfaces.BookUseCases.Dto;
 using Library.Domain.Models.Book;
+using Library.Domain.Models;
+using Library.Application.Exceptions;
 
 namespace Library.Application.Implementations.BookUseCases {
-    // Класс для обновления книги
     public class UpdateBookUseCase: IUpdateBookUseCase {
         private readonly IUnitOfWork _unit;
         private readonly IValidator<Book> _validator;
@@ -42,11 +43,14 @@ namespace Library.Application.Implementations.BookUseCases {
                     authorId: bookInputDto.AuthorId );
             }
             _validator.ValidateAndThrow( updatedBook );
+            if (await _unit.bookRepository.Exist(updatedBook.ISBN)) {
+                throw new AlreadyExistsException( $"Кника с ISBN{updatedBook.ISBN} уже существует!" );
+            }
             await _unit.bookRepository.UpdateAsync( updatedBook );
             await _unit.Save();
             if (bookInputDto.Image !=null) {
                 using (var stream = bookInputDto.Image.OpenReadStream()) {
-                    _image.SaveImage( stream, bookInputDto.BookId, bookInputDto.Image.ContentType.Split( "/" )[ 1 ] );
+                    await _image.SaveImage( stream, bookInputDto.BookId, bookInputDto.Image.ContentType.Split( "/" )[ 1 ] );
                 }
             }
         }

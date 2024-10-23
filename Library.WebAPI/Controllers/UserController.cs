@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
-using Library.Application.Auth.Enums;
 using Library.Application.Interfaces.Services;
-using Library.Domain.Interfaces;
-using Library.Domain.Interfaces.UserUseCases;
-using Library.Domain.Interfaces.UserUseCases.DTO;
+using Library.Application.Interfaces.UserUseCases;
+using Library.Application.Interfaces.UserUseCases.DTO;
 using Library.Infrastracture;
 using Library.WebAPI.Contracts.Book;
 using Library.WebAPI.Contracts.User;

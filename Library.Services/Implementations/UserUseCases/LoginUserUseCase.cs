@@ -1,8 +1,8 @@
 ﻿using Library.Application.Auth.Interfaces;
 using Library.Application.Exceptions;
 using Library.Application.Interfaces.Repositories;
-using Library.Domain.Interfaces.UserUseCases;
-using Library.Domain.Interfaces.UserUseCases.DTO;
+using Library.Application.Interfaces.UserUseCases;
+using Library.Application.Interfaces.UserUseCases.DTO;
 using Library.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 

@@ -7,16 +7,17 @@ using System.Threading.Tasks;
 
 namespace Library.Application.Interfaces.Repositories
 {
-    public interface IBookRepository
-    {
-        Task<IList<Book>> GetBooksAsync(int skip, int take);
-        Task<Book> GetBookWithAuthorAsync(Guid bookId);
-        Task<Book> GetAsync(Guid bookId);
-        Task<Book> GetBookWithAuthorAsync(string ISBN);
-        Task CreateAsync(Book book);
-        Task DeleteAsync(Book book);
-        Task UpdateAsync(Book changedBook);
-        Task<(IList<Book>, int)> GetFilteredBooksAsync(int skip, int take, string? authorFilter, string? titleFilter);
-        Task<Book> GetBookWithAllAsync(Guid bookId);
+    public interface IBookRepository {
+        Task<IList<Book>> GetBooksAsync( int skip, int take );
+        Task<Book> GetBookWithAuthorAsync( Guid bookId );
+        Task<Book> GetAsync( Guid bookId );
+        Task<Book> GetBookWithAuthorAsync( string ISBN );
+        Task CreateAsync( Book book );
+        Task DeleteAsync( Book book );
+        Task UpdateAsync( Book changedBook );
+        Task<(IList<Book>, int)> GetFilteredBooksAsync( int skip, int take, string? authorFilter, string? titleFilter );
+        Task<Book> GetBookWithAllAsync( Guid bookId );
+        Task<bool> Exist( Guid id );
+        Task<bool> Exist( string isbn );
     }
 }

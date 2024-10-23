@@ -66,5 +66,9 @@ namespace Library.DataAccess.Repository
         protected override IList<User> MapToDomainEntities( IList<UserEntity> dbEntities ) {
             return _mapper.Map<IList<User>>( dbEntities );
         }
+
+        public async Task<bool> Exist( string username ) {
+            return await _dbSet.AsNoTracking().AnyAsync(x=>x.UserName.Equals(username));
+        }
     }
 }
